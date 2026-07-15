@@ -42,7 +42,6 @@ function Quiz({ onStartRoom }) {
             <div className="quiz-options">
               {QUIZ[step].options.map((o) => (
                 <button key={o.label} className="quiz-option" onClick={() => setAnswers((a) => [...a, o])}>
-                  <span className="quiz-emoji">{o.emoji}</span>
                   {o.label}
                 </button>
               ))}
@@ -59,18 +58,15 @@ function Quiz({ onStartRoom }) {
             <h3 className="quiz-result-name">{COLLECTIONS[result.winner].name}</h3>
             <p className="quiz-result-tag">{COLLECTIONS[result.winner].tagline}</p>
             <div className="quiz-result-preset">
-              <span>{result.preset.emoji}</span>
-              <div>
-                <strong>Matched starter room: “{result.preset.name}”</strong>
-                <p>{result.preset.items.length} pieces, pre-styled and ready to remix.</p>
-              </div>
+              <strong>Matched starter room: “{result.preset.name}”</strong>
+              <p>{result.preset.items.length} pieces, pre-styled and ready to remix.</p>
             </div>
             <div className="quiz-result-actions">
               <button
                 className="btn btn-primary btn-lg"
                 onClick={() => onStartRoom(result.winner, result.preset.id)}
               >
-                Start with this room →
+                Start with this room
               </button>
               <button className="btn btn-ghost" onClick={reset}>Retake quiz</button>
             </div>

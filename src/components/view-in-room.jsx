@@ -9,7 +9,6 @@ const { useState: useStateAR, useEffect: useEffectAR, useRef: useRefAR, useMemo:
 // ============================================================
 
 const AR_FOV_DEG = 55
-const AR_TEAL = '#2ee6d6'
 const AR_MIN_FT = 2
 const AR_MAX_FT = 25
 
@@ -74,10 +73,11 @@ function arBoxGeometry({ dims, distFt, theta, sx, sy, w: stageW, h: stageH }) {
 }
 
 function ArLabel({ at, text, dx = 0, dy = 0 }) {
+  const w = Math.max(56, text.length * 7 + 18)
   return (
     <g transform={`translate(${at[0] + dx} ${at[1] + dy})`}>
-      <rect x="-30" y="-13" width="60" height="26" rx="13" fill="#101014" opacity="0.88" stroke={AR_TEAL} strokeWidth="1.5" />
-      <text textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="13" fontWeight="700" fontFamily="Space Grotesk, sans-serif">
+      <rect x={-w / 2} y="-13" width={w} height="26" rx="2" fill="#111111" opacity="0.9" />
+      <text textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="12" fontWeight="600" fontFamily="Poppins, sans-serif">
         {text}
       </text>
     </g>
@@ -110,11 +110,16 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
   useEffectAR(() => {
     const measure = () => {
       const r = stageRef.current?.getBoundingClientRect()
-      if (r) setStage({ w: r.width, h: r.height })
+      if (r && r.width) setStage((s) => (s.w === r.width && s.h === r.height ? s : { w: r.width, h: r.height }))
     }
     measure()
     window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null
+    if (ro && stageRef.current) ro.observe(stageRef.current)
+    return () => {
+      window.removeEventListener('resize', measure)
+      ro?.disconnect()
+    }
   }, [mode])
 
   // ---- camera ----
@@ -238,6 +243,7 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
       g.strokeRect(cw * 0.62, ch * 0.1, cw * 0.26, ch * 0.34)
     }
 
+    const lineCol = mode === 'camera' ? '#ffffff' : '#111111'
     const P = geo.pts.map((p) => [p[0] * scale, p[1] * scale])
     const drawFace = (fc) => {
       g.beginPath()
@@ -247,40 +253,37 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
       g.globalAlpha = fc.kind === 'bottom' ? 0.34 : fc.kind === 'top' ? 0.12 : 0.16
       g.fill()
       g.globalAlpha = 1
-      g.strokeStyle = AR_TEAL
-      g.lineWidth = 2.5 * scale
+      g.strokeStyle = lineCol
+      g.lineWidth = 2 * scale
       g.stroke()
     }
     geo.faces.forEach(drawFace)
-    g.font = `${Math.round(geo.emojiSize * scale)}px sans-serif`
-    g.textAlign = 'center'
-    g.textBaseline = 'middle'
-    g.fillText(product.thumb, geo.emojiPt[0] * scale, geo.emojiPt[1] * scale)
 
     const pill = (x, y, text) => {
-      g.font = `700 ${13 * scale}px Space Grotesk, sans-serif`
-      const w = g.measureText(text).width + 20 * scale
+      g.font = `600 ${12 * scale}px Poppins, sans-serif`
+      g.textAlign = 'center'
+      g.textBaseline = 'middle'
+      const w = g.measureText(text).width + 18 * scale
       const h = 26 * scale
-      g.fillStyle = 'rgba(16,16,20,0.88)'
-      g.strokeStyle = AR_TEAL
-      g.lineWidth = 1.5 * scale
+      g.fillStyle = 'rgba(17,17,17,0.9)'
       g.beginPath()
-      g.roundRect(x - w / 2, y - h / 2, w, h, h / 2)
+      g.roundRect(x - w / 2, y - h / 2, w, h, 2 * scale)
       g.fill()
-      g.stroke()
       g.fillStyle = '#fff'
       g.fillText(text, x, y + scale)
     }
+    pill(geo.emojiPt[0] * scale, (geo.emojiPt[1] - 24) * scale, `${product.short.toUpperCase()} — MOCKUP PENDING`)
     pill(geo.labels.w[0] * scale, geo.labels.w[1] * scale, `${product.dims.w}" W`)
     pill(geo.labels.d[0] * scale, geo.labels.d[1] * scale, `${product.dims.d}" D`)
     pill(geo.labels.h[0] * scale - 44 * scale, geo.labels.h[1] * scale, `${product.dims.h}" H`)
 
-    g.fillStyle = 'rgba(16,16,20,0.85)'
+    g.fillStyle = 'rgba(17,17,17,0.9)'
     g.fillRect(0, ch - 52 * scale, cw, 52 * scale)
     g.fillStyle = '#fff'
     g.textAlign = 'left'
-    g.font = `800 ${15 * scale}px Archivo, sans-serif`
-    g.fillText(`PACSUN HOME  ·  ${product.name}`, 16 * scale, ch - 26 * scale)
+    g.textBaseline = 'alphabetic'
+    g.font = `600 ${14 * scale}px Poppins, sans-serif`
+    g.fillText(`PACSUN HOME  ·  ${product.name}`, 16 * scale, ch - 22 * scale)
 
     const a = document.createElement('a')
     a.href = cv.toDataURL('image/png')
@@ -300,19 +303,23 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
       <div className="ar-topbar">
         <button className="ar-close" onClick={close}>✕</button>
         <div className="ar-title">
-          <strong>{product.thumb} {product.name}</strong>
+          <strong>{product.name}</strong>
           <span>{product.dims.w}″W × {product.dims.d}″D × {product.dims.h}″H · {fmt(product.price)}</span>
         </div>
         {mode === 'camera' && (
           <button className="ar-flip" onClick={() => enableCamera(facing === 'environment' ? 'user' : 'environment')} title="Flip camera">
-            🔄
+            Flip
           </button>
         )}
       </div>
 
       {mode === 'ask' ? (
         <div className="ar-ask">
-          <span className="ar-ask-emoji">📷</span>
+          <svg className="ar-ask-icon" viewBox="0 0 48 48" width="56" height="56" aria-hidden="true">
+            <rect x="4" y="12" width="40" height="28" rx="3" fill="none" stroke="currentColor" strokeWidth="2.5" />
+            <path d="M17 12l3-5h8l3 5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+            <circle cx="24" cy="26" r="8" fill="none" stroke="currentColor" strokeWidth="2.5" />
+          </svg>
           <h3>See it in your room</h3>
           <p>
             We'll use your camera to show the <strong>{product.name}</strong> at true scale — with its
@@ -353,18 +360,12 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
                     points={fc.ix.map((ix) => geo.pts[ix].join(',')).join(' ')}
                     fill={colorway.hex}
                     fillOpacity={fc.kind === 'bottom' ? 0.34 : fc.kind === 'top' ? 0.12 : 0.16}
-                    stroke={AR_TEAL}
-                    strokeWidth="2.5"
+                    stroke={mode === 'camera' ? '#ffffff' : '#111111'}
+                    strokeWidth="2"
                     strokeLinejoin="round"
                   />
                 ))}
-                <text
-                  x={geo.emojiPt[0]} y={geo.emojiPt[1]}
-                  textAnchor="middle" dominantBaseline="central"
-                  fontSize={geo.emojiSize} style={{ pointerEvents: 'none' }}
-                >
-                  {product.thumb}
-                </text>
+                <ArLabel at={geo.emojiPt} dy={-24} text={`${product.short.toUpperCase()} — MOCKUP PENDING`} />
                 <ArLabel at={geo.labels.w} text={`${product.dims.w}" W`} />
                 <ArLabel at={geo.labels.d} text={`${product.dims.d}" D`} />
                 <ArLabel at={geo.labels.h} dx={-44} text={`${product.dims.h}" H`} />
@@ -373,7 +374,7 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
 
             {!placed && (
               <div className="ar-hint">
-                <p>👆 Tap where you want it — then drag to move, scroll or pinch for distance.</p>
+                <p>Tap where you want it — then drag to move, scroll or pinch for distance.</p>
               </div>
             )}
             {placed && (
@@ -411,13 +412,13 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
             </div>
             <div className="ar-actions">
               <button className="btn btn-ghost" disabled={!placed} onClick={snapshot}>
-                {saved ? 'Saved ✓' : '📸 Snapshot'}
+                {saved ? 'Saved' : 'Snapshot'}
               </button>
               <button
                 className="btn btn-primary"
                 onClick={() => { onAddToCart(pid, cIdx); setAdded(true); setTimeout(() => setAdded(false), 1800) }}
               >
-                {added ? 'Added ✓' : `+ Add · ${fmt(product.price)}`}
+                {added ? 'Added' : `Add to Bag · ${fmt(product.price)}`}
               </button>
             </div>
             <p className="ar-note">

@@ -35,12 +35,12 @@ function CartDrawer({ open, cart, onClose, onChangeQty }) {
     <div className="sheet-scrim cart-scrim" onClick={onClose}>
       <aside className="cart" onClick={(e) => e.stopPropagation()} aria-label="Shopping cart">
         <div className="cart-head">
-          <h3>Your cart 🛍️</h3>
+          <h3>Shopping Bag</h3>
           <button className="cart-close" onClick={onClose}>✕</button>
         </div>
 
         {t.lines.length === 0 ? (
-          <p className="cart-empty">Nothing yet. Go build a room — it's faster than shopping one thing at a time.</p>
+          <p className="cart-empty">Your bag is empty. Build a room and shop the whole thing in one tap.</p>
         ) : (
           <>
             <ul className="cart-lines">
@@ -64,7 +64,7 @@ function CartDrawer({ open, cart, onClose, onChangeQty }) {
               .filter(([, n]) => n > 0 && n < BUNDLE_MIN)
               .map(([cid, n]) => (
                 <p key={cid} className="cart-nudge">
-                  💰 {BUNDLE_MIN - n} more {COLLECTIONS[cid].short} item{BUNDLE_MIN - n > 1 ? 's' : ''} unlocks 15% off.
+                  {BUNDLE_MIN - n} more {COLLECTIONS[cid].short} item{BUNDLE_MIN - n > 1 ? 's' : ''} unlocks 15% off.
                 </p>
               ))}
 
@@ -72,14 +72,14 @@ function CartDrawer({ open, cart, onClose, onChangeQty }) {
               <div><span>Subtotal</span><span>{fmt(t.sub)}</span></div>
               {Object.entries(t.discounts).map(([cid, amt]) => (
                 <div key={cid} className="cart-discount">
-                  <span>🎉 {COLLECTIONS[cid].short} bundle −15%</span>
+                  <span>{COLLECTIONS[cid].short} bundle −15%</span>
                   <span>−{fmt(Math.round(amt * 100) / 100)}</span>
                 </div>
               ))}
               <div className="cart-grand"><span>Total</span><span>{fmt(Math.round(t.total * 100) / 100)}</span></div>
             </div>
-            <button className="btn btn-primary btn-lg cart-checkout" onClick={() => alert('Demo only — checkout not wired up. 🛒')}>
-              Checkout →
+            <button className="btn btn-primary btn-lg cart-checkout" onClick={() => alert('Demo only — checkout not wired up.')}>
+              Checkout
             </button>
           </>
         )}

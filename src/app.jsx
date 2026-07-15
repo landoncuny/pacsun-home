@@ -100,10 +100,7 @@ function App() {
   const theme = COLLECTIONS[collection]
 
   return (
-    <div
-      className={'app theme-' + collection}
-      style={{ '--acc': theme.accent, '--acc2': theme.accent2, '--onacc': theme.onAccent }}
-    >
+    <div className={'app theme-' + collection} style={{ '--acc': theme.accent }}>
       <Nav onNavigate={navigate} cartCount={cartCount} onCartOpen={() => setCartOpen(true)} activeSection={activeSection} />
       <Hero onBuild={() => navigate('build')} onQuiz={() => navigate('quiz')} />
 

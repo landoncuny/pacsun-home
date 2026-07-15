@@ -263,16 +263,16 @@ function computeFit(placed, dims) {
     const fits = (w <= dims.w && l <= dims.l) || (l <= dims.w && w <= dims.l)
     if (!fits) {
       flags[it.uid] = 'too-big'
-      notes.push(`❌ ${p.name} (${w}×${l} ft) won't clear a ${dims.w}×${dims.l} room.`)
+      notes.push({ level: 'bad', text: `${p.name} (${w}×${l} ft) won't clear a ${dims.w}×${dims.l} room.` })
       return
     }
     used += w * l
     if (used > area * 0.55) {
       flags[it.uid] = 'tight'
-      notes.push(`⚠️ ${p.name} makes the floor plan tight — you're over 55% floor coverage.`)
+      notes.push({ level: 'warn', text: `${p.name} makes the floor plan tight — you're over 55% floor coverage.` })
     }
   })
-  if (notes.length === 0 && placed.length > 0) notes.push(`✅ Everything fits your ${dims.w}×${dims.l} ft room. Clean layout.`)
+  if (notes.length === 0 && placed.length > 0) notes.push({ level: 'ok', text: `Everything fits your ${dims.w}×${dims.l} ft room. Clean layout.` })
   return { flags, notes, used, area }
 }
 
@@ -311,7 +311,7 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
 
   const applyPreset = useCallback((preset) => {
     setPlaced(preset.items.map(([pid, c, z]) => ({ uid: nextUid(), pid, c, z })))
-    showToast(`${preset.emoji} “${preset.name}” loaded — make it yours.`)
+    showToast(`“${preset.name}” loaded — make it yours.`)
   }, [showToast])
 
   useEffect(() => {
@@ -383,10 +383,10 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
         if (zone) {
           if (d.uid) {
             setPlaced((ps) => ps.map((it) => (it.uid === d.uid ? { ...it, z: zone } : it)))
-            showToast(`Moved to ${ZONE_META[zone].label.toLowerCase()} ✓`)
+            showToast(`Moved to ${ZONE_META[zone].label.toLowerCase()}`)
           } else {
             setPlaced((ps) => [...ps, { uid: nextUid(), pid: d.pid, c: d.c, z: zone }])
-            showToast(`${byId(d.pid).thumb} Snapped to ${ZONE_META[zone].label.toLowerCase()}`)
+            showToast(`${byId(d.pid).short} snapped to ${ZONE_META[zone].label.toLowerCase()}`)
           }
         }
       } else {
@@ -395,7 +395,7 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
         else {
           const p = byId(d.pid)
           setPlaced((ps) => [...ps, { uid: nextUid(), pid: d.pid, c: d.c, z: p.zone }])
-          showToast(`${p.thumb} Added to ${ZONE_META[p.zone].label.toLowerCase()} — or drag next time`)
+          showToast(`${p.short} added to ${ZONE_META[p.zone].label.toLowerCase()} — or drag it next time`)
         }
       }
     }
@@ -443,7 +443,7 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
         <span className="preset-label">Starter rooms:</span>
         {presets.map((p) => (
           <button key={p.id} className="preset-chip" onClick={() => applyPreset(p)}>
-            {p.emoji} {p.name}
+            {p.name}
           </button>
         ))}
         {placed.length > 0 && (
@@ -456,7 +456,7 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
       {/* AI fit check */}
       <div className={'fit-panel' + (fitOn ? ' is-on' : '')}>
         <button className="fit-toggle" onClick={() => setFitOn((v) => !v)}>
-          <span className="fit-bot">🤖</span> AI Fit Check
+          AI Fit Check
           <span className={'fit-switch' + (fitOn ? ' on' : '')} aria-hidden="true" />
         </button>
         {fitOn && (
@@ -489,9 +489,9 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
               ))}
             </div>
             <ul className="fit-notes">
-              {fit.notes.length === 0 && <li>Place some items and I'll check the math.</li>}
+              {fit.notes.length === 0 && <li className="fit-note-ok">Place some items and we'll check the math.</li>}
               {fit.notes.map((n, i) => (
-                <li key={i}>{n}</li>
+                <li key={i} className={'fit-note-' + n.level}>{n.text}</li>
               ))}
             </ul>
           </div>
@@ -536,14 +536,14 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
               onPointerDown={(e) => startPointer(e, { pid: it.pid, c: it.c, uid: it.uid })}
               title={p.name + ' — tap to edit, drag to move'}
             >
-              {p.thumb}
+              {p.short}
             </button>
           )
         })}
 
         {placed.length === 0 && (
           <div className="canvas-empty">
-            <p>👇 Drag something up from the tray,<br />or tap a starter room.</p>
+            <p>Drag a product up from the tray,<br />or tap a starter room.</p>
           </div>
         )}
       </div>
@@ -556,20 +556,20 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
             {fmt(roomTotal.total)}
             {roomTotal.discount > 0 && <s>{fmt(roomTotal.sub)}</s>}
           </strong>
-          {roomTotal.bundled && <span className="room-hud-bundle">BUNDLE −15% ✓</span>}
+          {roomTotal.bundled && <span className="room-hud-bundle">Bundle −15% applied</span>}
         </div>
-        <button className="btn btn-primary" disabled={placed.length === 0} onClick={() => { onShopRoom(placed); showToast('🛍️ Room added to cart!') }}>
+        <button className="btn btn-primary" disabled={placed.length === 0} onClick={() => { onShopRoom(placed); showToast('Room added to bag.') }}>
           Shop This Room
         </button>
         <button className="btn btn-ghost" disabled={placed.length === 0} onClick={() => setShareOpen(true)}>
-          Share My Room ↗
+          Share My Room
         </button>
       </div>
 
       {/* catalog tray */}
       <div className="tray">
         <p className="tray-label">
-          {COLLECTIONS[collection].short} catalog — <em>hold + drag into the room</em>
+          {COLLECTIONS[collection].short} catalog — hold + drag into the room
         </p>
         <div className="tray-scroll">
           {tray.map((p) => (
@@ -578,7 +578,7 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
               className="tray-card"
               onPointerDown={(e) => startPointer(e, { pid: p.id, c: 0 })}
             >
-              <ProductThumb product={p} size={56} />
+              <ProductThumb product={p} size={64} />
               <span className="tray-name">{p.name}</span>
               <span className="tray-price">{fmt(p.price)}</span>
             </div>
@@ -589,7 +589,7 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
       {/* drag ghost */}
       {drag && (
         <div className="drag-ghost" style={{ left: drag.x, top: drag.y }}>
-          <span style={{ background: byId(drag.pid).colorways[drag.c]?.hex }}>{byId(drag.pid).thumb}</span>
+          <span style={{ background: byId(drag.pid).colorways[drag.c]?.hex }}>{byId(drag.pid).short}</span>
         </div>
       )}
 
@@ -636,7 +636,7 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
               className="btn btn-ghost sheet-ar"
               onClick={() => { setSheetUid(null); onViewInRoom(sheetItem.pid, sheetItem.c) }}
             >
-              📷 View in your room — true scale
+              View in Your Room — true scale
             </button>
             <div className="sheet-actions">
               <button
@@ -657,21 +657,19 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
           <div className="share-modal" onClick={(e) => e.stopPropagation()}>
             <div className="share-card">
               <p className="share-brand">PACSUN HOME</p>
-              <div className="share-emojis">
+              <div className="share-items">
                 {placed.slice(0, 6).map((it) => (
-                  <span key={it.uid} style={{ background: byId(it.pid).colorways[it.c]?.hex }}>
-                    {byId(it.pid).thumb}
-                  </span>
+                  <ProductThumb key={it.uid} product={byId(it.pid)} colorIdx={it.c} size={52} />
                 ))}
               </div>
-              <p className="share-caption">my @pacsun home era 🛋️✨</p>
-              <p className="share-tags">#PacSunHome #RoomTour #{COLLECTIONS[collection].short.replace(/\s/g, '')}Core</p>
+              <p className="share-caption">my @pacsun home era</p>
+              <p className="share-tags">#PacSunHome #RoomTour #{COLLECTIONS[collection].short.replace(/\s/g, '')}</p>
             </div>
             <p className="share-hint">This link reopens your exact room — drop it in your TikTok or IG bio.</p>
             <div className="share-link">
               <input readOnly value={shareUrl} onFocus={(e) => e.target.select()} />
               <button className="btn btn-primary" onClick={copyShare}>
-                {copied ? 'Copied! ✓' : 'Copy link'}
+                {copied ? 'Copied' : 'Copy link'}
               </button>
             </div>
             <button className="btn btn-ghost" onClick={() => setShareOpen(false)}>Close</button>
