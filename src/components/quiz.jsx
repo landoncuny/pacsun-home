@@ -54,8 +54,8 @@ function Quiz({ onStartRoom }) {
         <div className="quiz-lede">
           <h2>Find your room era.</h2>
           <p>
-            Answer five questions and the index assigns you a collection, its Pantone standards, and a
-            pre-styled starter room you can remix piece by piece.
+            Answer five questions and the index assigns you a collection and a pre-styled starter room
+            you can remix piece by piece.
           </p>
           <div className="quiz-pct">
             <strong>{pct}%</strong>
@@ -107,8 +107,6 @@ function Quiz({ onStartRoom }) {
               </div>
               <h3 className="quiz-result-name">{COLLECTIONS[result.winner].name}</h3>
               <p className="quiz-result-tag">{COLLECTIONS[result.winner].tagline}</p>
-              <p className="quiz-result-colors-label">Your colour standards</p>
-              <PantoneRow swatches={COLLECTIONS[result.winner].pantone} />
               <div className="quiz-result-preset">
                 <strong>Matched starter room: “{result.preset.name}”</strong>
                 <p>{result.preset.items.length} pieces, pre-styled and ready to remix.</p>

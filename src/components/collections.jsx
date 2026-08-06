@@ -37,22 +37,6 @@ function BundleBanner({ count, collectionName }) {
   )
 }
 
-function PantoneRow({ swatches }) {
-  return (
-    <div className="pantone-row">
-      {swatches.map((s) => (
-        <div className="pantone-chip" key={s.code}>
-          <span className="pantone-block" style={{ background: s.hex }} />
-          <span className="pantone-meta">
-            <span className="pantone-name">{s.name}</span>
-            <span className="pantone-code">{s.code}</span>
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 function ProductCard({ product, onAddToCart, onViewInRoom }) {
   const { fmt } = window.DATA
   const [ci, setCi] = useStateC(0)
@@ -91,7 +75,7 @@ function ProductCard({ product, onAddToCart, onViewInRoom }) {
   )
 }
 
-// One full-width band per collection: its own rule, Pantone standards and grid.
+// One full-width band per collection: its own rule and product grid.
 function CollectionBand({ collection: c, index, products, bundleCount, onAddToCart, onViewInRoom, onBuildRoom }) {
   return (
     <section className={'coll-band' + (index % 2 === 1 ? ' is-shaded' : '')} id={'collection-' + c.id}>
@@ -103,15 +87,11 @@ function CollectionBand({ collection: c, index, products, bundleCount, onAddToCa
               {c.flagship && <em className="coll-flag">Flagship</em>}
             </p>
             <h3 className="coll-band-title">{c.name}</h3>
-            <p className="coll-band-tagline">
-              {c.tagline} <em>Ages {c.ages}.</em>
-            </p>
+            <p className="coll-band-tagline">{c.tagline}</p>
           </div>
           <div className="coll-band-colors">
-            <span className="coll-band-colors-label">Colour standards</span>
-            <PantoneRow swatches={c.pantone} />
             <button className="link-btn coll-band-build" onClick={onBuildRoom}>
-              Build a {c.short} room
+              Build {/^[aeiou]/i.test(c.short) ? 'an' : 'a'} {c.short} room
             </button>
           </div>
         </header>
@@ -133,8 +113,8 @@ function CollectionBand({ collection: c, index, products, bundleCount, onAddToCa
 }
 
 function Collections({ collection, onSelect, onAddToCart, onViewInRoom, cartCountsByCollection = {} }) {
-  const { COLLECTIONS, PRODUCTS } = window.DATA
-  const list = Object.values(COLLECTIONS)
+  const { PRODUCTS, collectionList } = window.DATA
+  const list = collectionList()
 
   return (
     <div>
@@ -142,8 +122,7 @@ function Collections({ collection, onSelect, onAddToCart, onViewInRoom, cartCoun
         <p className="section-kicker">01 — Shop by collection</p>
         <h2 className="section-title">Three collections. Three palettes.</h2>
         <p className="section-sub">
-          Each collection ships against its own Pantone standards. Pick one to filter the room builder,
-          presets and bundles.
+          Each collection has its own palette. Pick one to filter the room builder, presets and bundles.
         </p>
 
         <div className="coll-cards">
@@ -157,10 +136,11 @@ function Collections({ collection, onSelect, onAddToCart, onViewInRoom, cartCoun
                 <span className="ph-label">{c.short} lookbook</span>
               </span>
               <span className="coll-meta">
-                <span className="coll-ages">
-                  Ages {c.ages}
-                  {c.flagship && <em className="coll-flag">Flagship</em>}
-                </span>
+                {c.flagship && (
+                  <span className="coll-ages">
+                    <em className="coll-flag">Flagship</em>
+                  </span>
+                )}
                 <span className="coll-name">{c.name}</span>
                 <span className="coll-tagline">{c.tagline}</span>
                 <span className="coll-vibes">{c.vibe.join(' · ')}</span>
@@ -191,4 +171,3 @@ window.Collections = Collections
 window.CollectionBand = CollectionBand
 window.ProductThumb = ProductThumb
 window.BundleBanner = BundleBanner
-window.PantoneRow = PantoneRow

@@ -85,8 +85,14 @@
     lighting: 'Lighting', 'wall-art': 'Wall Art', wallpaper: 'Wallpaper', kit: 'Complete Kits',
     blanket: 'Throws & Blankets', kitchen: 'Kitchen', decor: 'Decor', audio: 'Audio',
   }
+  // ---------- customer-facing order ----------
+  // Home Essentials leads, then Dorm, then Kids. Single source of truth for
+  // the shop dropdown, the collection cards and the scroll order of the bands.
+  D.DISPLAY_ORDER = ['essentials', 'dorm', 'kids']
+  D.collectionList = () => D.DISPLAY_ORDER.map((id) => D.COLLECTIONS[id]).filter(Boolean)
+
   D.shopMenu = () =>
-    Object.values(D.COLLECTIONS).map((c) => {
+    D.collectionList().map((c) => {
       // Dedupe by LABEL — several categories share one merchandising label.
       const labels = []
       D.PRODUCTS.forEach((p) => {
