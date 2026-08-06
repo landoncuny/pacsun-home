@@ -1,0 +1,204 @@
+/* ============ PACSUN HOME — v2 LAYER ============
+   Loaded AFTER styles.css. Additive only: the Anton display voice, the
+   pink pop accent, the Shop dropdown, separated collection bands with
+   Pantone chips, product photography, and the full-bleed style quiz.
+   Nothing in styles.css is edited — later rules simply win. */
+
+:root {
+  --font-display: 'Anton', 'Poppins', Impact, sans-serif;
+  --pop-pink: #e87fc4;
+  --pop-lime: #c9d96a;
+  --pop-ice: #8fd4e8;
+  --accent-pop: var(--pop-pink);
+}
+
+.display, .hero-title, .section-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+}
+.hero-title { font-size: clamp(48px, 10vw, 96px); line-height: 0.94; }
+.section-title { font-size: clamp(30px, 5.5vw, 46px); line-height: 1; }
+.hero-kicker { color: var(--accent-pop); }
+
+/* ---------- nav: pink promo + dropdown ---------- */
+.nav-promo { background: var(--accent-pop); color: var(--ink); }
+.nav-pill { border-bottom-width: 3px; }
+.nav-pill:hover { border-bottom-color: var(--line); }
+.nav-pill.is-active, .nav-pill.is-open { font-weight: 600; border-bottom-color: var(--accent-pop); }
+.nav-pills { overflow: visible; }
+
+.nav-menu {
+  position: absolute; left: 0; right: 0; top: 100%;
+  background: var(--white); border-top: 1px solid var(--line); border-bottom: 1px solid var(--ink);
+  box-shadow: 0 14px 28px rgba(17, 17, 17, 0.08); animation: fadeIn 0.14s ease; z-index: 60;
+}
+.nav-menu-inner {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px;
+  max-width: 1100px; margin: 0 auto; padding: 26px 16px 30px;
+}
+@media (max-width: 700px) { .nav-menu-inner { grid-template-columns: 1fr; gap: 20px; } }
+.nav-menu-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.nav-menu-title {
+  display: flex; align-items: center; gap: 8px; padding-bottom: 9px; border-bottom: 1px solid var(--line);
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em;
+}
+.nav-menu-swatch { width: 10px; height: 10px; border: 1px solid var(--ink); flex: 0 0 auto; }
+.nav-menu-links { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+.nav-menu-link { font-size: 13px; font-weight: 400; text-align: left; color: var(--ink); }
+.nav-menu-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.nav-menu-link.is-strong { font-weight: 600; }
+
+/* ---------- hero: bedding strip replaces the placeholder ---------- */
+.hero-shots {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--line); border-top: 1px solid var(--line);
+}
+@media (max-width: 700px) { .hero-shots { grid-template-columns: 1fr 1fr; } .hero-shots figure:last-child { grid-column: span 2; } }
+.hero-shot { position: relative; background: var(--tile); }
+.hero-shot img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+.hero-shot figcaption {
+  position: absolute; bottom: 12px; left: 12px; background: var(--white); border: 1px solid var(--ink);
+  padding: 5px 8px; font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+}
+
+/* ---------- Pantone chips ---------- */
+.pantone-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.pantone-chip {
+  display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--line); min-width: 96px;
+}
+.pantone-block { display: block; height: 44px; border-bottom: 1px solid var(--line); }
+.pantone-meta { display: flex; flex-direction: column; gap: 2px; padding: 7px 8px 8px; }
+.pantone-name { font-size: 11.5px; font-weight: 600; letter-spacing: -0.01em; }
+.pantone-code {
+  font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--grey-7);
+}
+
+/* ---------- collection bands ---------- */
+.coll-band { border-top: 1px solid var(--ink); background: var(--white); }
+.coll-band.is-shaded { background: var(--tile); }
+.coll-band-inner { max-width: 1100px; margin: 0 auto; padding: 44px 16px 56px; }
+.coll-band-head {
+  display: grid; grid-template-columns: minmax(220px, 1fr) auto; gap: 32px; align-items: end;
+  padding-bottom: 22px; border-bottom: 1px solid var(--line);
+}
+@media (max-width: 860px) { .coll-band-head { grid-template-columns: 1fr; gap: 20px; } }
+.coll-band-id { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; min-width: 0; }
+.coll-band-kicker {
+  display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; color: var(--grey-7);
+}
+.coll-band-title {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.005em;
+  font-size: clamp(32px, 5vw, 48px); line-height: 0.96;
+}
+.coll-band-tagline { font-size: 14px; color: var(--grey-7); max-width: 460px; }
+.coll-band-tagline em { font-style: normal; color: var(--grey-9); }
+.coll-band-colors { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+@media (max-width: 860px) { .coll-band-colors { align-items: flex-start; } }
+.coll-band-colors-label {
+  font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--grey-7); white-space: nowrap;
+}
+.coll-band-build { white-space: nowrap; }
+.coll-band-bundle { margin-top: 20px; }
+.coll-band .product-grid { margin-top: 26px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 28px 16px; }
+
+/* ---------- product photography ---------- */
+.product-photo {
+  position: relative; display: block; width: 100%; aspect-ratio: 3 / 4; overflow: hidden;
+  border: 1px solid var(--line); background: var(--tile);
+}
+.product-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.product-line-tag { background: var(--ink); }
+
+/* ---------- quiz: full-bleed feature ---------- */
+.quiz-feature { background: var(--ink); color: var(--white); border-top: 1px solid var(--ink); }
+.quiz-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  max-width: 1100px; margin: 0 auto; padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+.quiz-bar-index {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.24em; color: var(--accent-pop);
+}
+.quiz-bar-meta {
+  font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; color: rgba(255, 255, 255, 0.6);
+}
+.quiz-grid {
+  max-width: 1100px; margin: 0 auto; padding: 48px 16px 64px;
+  display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 44px; align-items: start;
+}
+@media (max-width: 900px) { .quiz-grid { grid-template-columns: 1fr; gap: 32px; padding: 36px 16px 48px; } }
+.quiz-lede { display: flex; flex-direction: column; gap: 22px; position: sticky; top: 108px; }
+@media (max-width: 900px) { .quiz-lede { position: static; } }
+.quiz-lede h2 {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.005em;
+  font-size: clamp(44px, 6vw, 72px); line-height: 0.92;
+}
+.quiz-lede p { font-size: 14.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.72); max-width: 380px; }
+.quiz-pct { display: flex; align-items: baseline; gap: 12px; }
+.quiz-pct strong {
+  font-family: var(--font-display); font-weight: 400; font-size: 44px; letter-spacing: 0.005em; color: var(--accent-pop);
+}
+.quiz-pct span {
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255, 255, 255, 0.6);
+}
+.quiz-rail { list-style: none; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.quiz-rail li {
+  display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+.quiz-rail-num { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: var(--accent-pop); }
+.quiz-rail-q { font-size: 12.5px; }
+.quiz-rail-state {
+  font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.4);
+}
+.quiz-rail li.is-todo .quiz-rail-num { color: rgba(255, 255, 255, 0.4); }
+.quiz-rail li.is-todo .quiz-rail-q { color: rgba(255, 255, 255, 0.45); }
+.quiz-rail li.is-now .quiz-rail-q { font-weight: 600; }
+.quiz-rail li.is-now .quiz-rail-state { color: var(--accent-pop); }
+
+.quiz-panel {
+  background: var(--white); color: var(--ink); padding: 32px 30px 34px; box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+}
+@media (max-width: 700px) { .quiz-panel { padding: 24px 20px 26px; } }
+.quiz-panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--ink);
+}
+.quiz-panel-count {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap;
+}
+.quiz-ticks { display: flex; gap: 4px; }
+.quiz-ticks span { width: 22px; height: 4px; background: var(--line); }
+.quiz-ticks span.done { background: var(--accent-pop); }
+.quiz-ticks span.now { background: var(--ink); }
+.quiz-panel .quiz-q {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.005em;
+  font-size: clamp(28px, 3.4vw, 40px); line-height: 1; margin: 24px 0 22px;
+}
+.quiz-panel .quiz-options { gap: 12px; }
+.quiz-panel .quiz-option {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 26px;
+  min-height: 122px; padding: 14px 16px 16px; align-items: flex-start;
+}
+.quiz-option-letter { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; color: var(--grey-7); }
+.quiz-option-label { font-size: 16px; font-weight: 500; line-height: 1.3; }
+.quiz-panel-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px;
+}
+.quiz-panel-foot .quiz-back { margin-top: 0; }
+.quiz-panel-note {
+  font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--grey-9);
+}
+.quiz-result-kicker.is-pop { color: var(--accent-pop); }
+.quiz-panel .quiz-result-name {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.005em;
+  font-size: clamp(34px, 4.6vw, 54px); line-height: 0.96; margin: 20px 0 6px;
+}
+.quiz-result-colors-label {
+  font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--grey-7); margin: 22px 0 10px;
+}
+.quiz-result-actions { flex-direction: row; flex-wrap: wrap; }

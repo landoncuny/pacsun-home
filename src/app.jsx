@@ -26,16 +26,29 @@ function App() {
 
   const refs = { shop: useRefA(null), build: useRefA(null), quiz: useRefA(null), community: useRefA(null) }
 
-  // Smooth scroll with an instant fallback — some embedded webviews
-  // never run rAF-driven smooth scrolling, so verify we moved and jump if not.
-  const navigate = (id) => {
-    const el = id === 'top' ? null : refs[id]?.current
-    if (id !== 'top' && !el) return
-    const target = id === 'top' ? 0 : el.getBoundingClientRect().top + window.scrollY - 100
+  const scrollTo = (target) => {
     window.scrollTo({ top: target, behavior: 'smooth' })
     setTimeout(() => {
       if (Math.abs(window.scrollY - target) > 40) window.scrollTo({ top: target, behavior: 'instant' })
     }, 700)
+  }
+
+  // Smooth scroll with an instant fallback — some embedded webviews
+  // never run rAF-driven smooth scrolling, so verify we moved and jump if not.
+  // "collection-<id>" targets a shop band and selects that collection.
+  const navigate = (id) => {
+    if (typeof id === 'string' && id.indexOf('collection-') === 0) {
+      const cid = id.slice('collection-'.length)
+      if (COLLECTIONS[cid]) setCollection(cid)
+      requestAnimationFrame(() => {
+        const el = document.getElementById(id)
+        if (el) scrollTo(el.getBoundingClientRect().top + window.scrollY - 100)
+      })
+      return
+    }
+    const el = id === 'top' ? null : refs[id]?.current
+    if (id !== 'top' && !el) return
+    scrollTo(id === 'top' ? 0 : el.getBoundingClientRect().top + window.scrollY - 100)
   }
 
   // shared room links land you right in the builder
@@ -88,14 +101,22 @@ function App() {
     navigate('build')
   }
 
+  // Collections calls this with { build: true } from a band's "Build a … room".
+  const selectCollection = (cid, opts) => {
+    setCollection(cid)
+    if (opts && opts.build) navigate('build')
+  }
+
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0)
-  const cartCollectionCount = useMemoA(() => {
+  // Per-collection counts drive one bundle banner inside each shop band.
+  const cartCountsByCollection = useMemoA(() => {
     const { byId } = window.DATA
-    return Object.entries(cart).reduce((n, [key, qty]) => {
+    return Object.entries(cart).reduce((acc, [key, qty]) => {
       const p = byId(key.split('|')[0])
-      return p && p.collection === collection ? n + qty : n
-    }, 0)
-  }, [cart, collection])
+      if (p) acc[p.collection] = (acc[p.collection] || 0) + qty
+      return acc
+    }, {})
+  }, [cart])
 
   const theme = COLLECTIONS[collection]
 
@@ -107,10 +128,10 @@ function App() {
       <section ref={refs.shop} data-section="shop">
         <Collections
           collection={collection}
-          onSelect={setCollection}
+          onSelect={selectCollection}
           onAddToCart={addToCart}
           onViewInRoom={(pid, colorIdx) => setArView({ pid, colorIdx })}
-          cartCollectionCount={cartCollectionCount}
+          cartCountsByCollection={cartCountsByCollection}
         />
       </section>
 

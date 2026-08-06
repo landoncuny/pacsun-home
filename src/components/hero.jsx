@@ -1,3 +1,9 @@
+const HERO_SHOTS = [
+  { src: './src/assets/bedding-pink-heart.png', label: "Women's · Dorm" },
+  { src: './src/assets/bedding-navy.png', label: "Men's · Dorm" },
+  { src: './src/assets/bedding-plaid-blue.png', label: 'Kids' },
+]
+
 function Hero({ onBuild, onQuiz }) {
   return (
     <section className="hero" id="top">
@@ -14,8 +20,13 @@ function Hero({ onBuild, onQuiz }) {
           </button>
         </div>
       </div>
-      <div className="ph-hero" role="img" aria-label="Campaign imagery placeholder">
-        <span className="ph-label">Campaign imagery — coming soon</span>
+      <div className="hero-shots">
+        {HERO_SHOTS.map((s) => (
+          <figure className="hero-shot" key={s.label}>
+            <img src={s.src} alt={s.label + ' bedding'} />
+            <figcaption>{s.label}</figcaption>
+          </figure>
+        ))}
       </div>
     </section>
   )
