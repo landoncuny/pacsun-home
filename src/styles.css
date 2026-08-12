@@ -259,6 +259,23 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
 .room-chip:hover { transform: translate(-50%, -50%) scale(1.08); }
 .room-chip.flagged { border-color: var(--sale); animation: flagPulse 1s infinite; box-shadow: 0 0 0 2px rgba(212,0,0,0.4); }
 
+/* Photographed products stand in the room as themselves. The mockups carry a
+   cut-out alpha channel, so they drop onto the floor or desk with no plate
+   behind them and take a contact shadow like anything else in the room. */
+.room-chip-photo {
+  padding: 0; border: none; box-shadow: none; background-repeat: no-repeat;
+  filter: drop-shadow(3px 4px 3px rgba(17, 17, 17, 0.22));
+}
+/* Props stand on the surface they were dropped on, so they hang from their
+   own base rather than centring on the zone anchor. */
+.room-chip-photo.on-surface { transform: translate(-50%, -100%); }
+.room-chip-photo.on-surface:hover { transform: translate(-50%, -100%) scale(1.06); }
+.room-chip-photo.flagged { outline: 2px solid var(--sale); outline-offset: 3px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
 .canvas-empty { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
 .canvas-empty p {
   background: rgba(17,17,17,0.88); color: var(--white); text-align: center; font-weight: 500;

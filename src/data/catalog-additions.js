@@ -120,6 +120,36 @@
     D.PRODUCTS.splice(at < 0 ? D.PRODUCTS.length : at, 0, p)
   })
 
+  // ---------- room-canvas crops ----------
+  // The mockups are whole scenes on white: a made bed, or — for PS Goodnight —
+  // a bed with its matching sleep set laid out beside it. The room preview
+  // needs the product alone, so each SKU carries the sub-rect to lift out of
+  // its image, as fractions of the source: [x0, y0, x1, y1].
+  //
+  // Bedding crops to the duvet surface only (no frame, no sleep set) so the
+  // fabric can be stretched over the bed the room already draws. Everything
+  // else crops to the product's own outline and stands on the surface it was
+  // dropped on.
+  const ROOM_CROP = {
+    // duvet surfaces — inset from the mockup's own frame on every side
+    e20: [0.423, 0.478, 0.792, 0.665],
+    e21: [0.401, 0.454, 0.769, 0.641],
+    d20: [0.28, 0.513, 0.649, 0.7],
+    d21: [0.267, 0.5, 0.636, 0.686],
+    d22: [0.287, 0.497, 0.656, 0.683],
+    d23: [0.272, 0.504, 0.641, 0.69],
+    k20: [0.387, 0.489, 0.756, 0.675],
+    k21: [0.399, 0.445, 0.768, 0.631],
+    // props that sit on a surface
+    e22: [0.193, 0.114, 0.806, 0.884],
+    e23: [0.119, 0.188, 0.881, 0.81],
+    d24: [0.074, 0.039, 0.946, 0.922],
+  }
+  Object.keys(ROOM_CROP).forEach((id) => {
+    const p = D.byId(id)
+    if (p) p.crop = ROOM_CROP[id]
+  })
+
   // ---------- presets: photographed SKUs only ----------
   // The builder never shows an unphotographed product, so the starter rooms
   // can only place photographed ones. Anything a preset used to drop in that

@@ -4,17 +4,24 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React
 // Snap zones — hit boxes + chip anchors, in % of the canvas.
 // ---------------------------------------------------------------
 const ZONES = ['bed', 'floor', 'desk', 'wall', 'window']
+// cx/cy anchor the plain chips. A photographed product instead stands on the
+// surface: px/py is the point its base rests on and pw is its width, both in
+// % of the canvas, traced off the room drawing below.
 const ZONE_META = {
-  bed: { label: 'Bed', box: { x: 4, y: 40, w: 46, h: 40 }, cx: 32, cy: 58 },
-  floor: { label: 'Floor', box: { x: 38, y: 60, w: 40, h: 36 }, cx: 56, cy: 74 },
-  desk: { label: 'Desk', box: { x: 62, y: 36, w: 34, h: 24 }, cx: 77, cy: 47 },
-  wall: { label: 'Bed wall', box: { x: 4, y: 2, w: 44, h: 36 }, cx: 24, cy: 16 },
-  window: { label: 'Window', box: { x: 56, y: 4, w: 40, h: 30 }, cx: 79, cy: 20 },
+  bed: { label: 'Bed', box: { x: 4, y: 40, w: 46, h: 40 }, cx: 32, cy: 58, px: 31, py: 60, pw: 21, surface: true },
+  floor: { label: 'Floor', box: { x: 38, y: 60, w: 40, h: 36 }, cx: 56, cy: 74, px: 59, py: 78, pw: 23, surface: true },
+  desk: { label: 'Desk', box: { x: 62, y: 36, w: 34, h: 24 }, cx: 77, cy: 47, px: 77, py: 52, pw: 17, surface: true },
+  wall: { label: 'Bed wall', box: { x: 4, y: 2, w: 44, h: 36 }, cx: 24, cy: 16, px: 24, py: 16, pw: 18 },
+  window: { label: 'Window', box: { x: 56, y: 4, w: 40, h: 30 }, cx: 79, cy: 20, px: 79, py: 20, pw: 16 },
 }
 
 const CHIP_OFFSETS = [
   [0, 0], [9, -4], [-8, 5], [7, 7], [-9, -6], [14, 2],
 ]
+
+// Every product mockup is shot on the same 792×612 white plate.
+const MOCKUP_W = 792
+const MOCKUP_H = 612
 
 let uidSeq = 1
 const nextUid = () => 'u' + uidSeq++
@@ -52,6 +59,16 @@ function RoomSVG({ placed, scale, flags, onTapItem }) {
     return p.colorways[it.c]?.hex || '#ddd'
   }
   const patternOf = (it) => byId(it.pid).pattern
+  // Photography wins over the flat swatch, but only when the SKU also declares
+  // which part of its mockup to lift out — see ROOM_CROP in catalog-additions.
+  const imageOf = (it) => {
+    const p = byId(it.pid)
+    return p.colorways[it.c]?.image || p.image
+  }
+  const cropOf = (it) => {
+    const p = byId(it.pid)
+    return p.crop && imageOf(it) ? p.crop : null
+  }
 
   const patDefs = []
   const withPattern = (it, shapeProps, keySuffix = '') => {
@@ -83,10 +100,46 @@ function RoomSVG({ placed, scale, flags, onTapItem }) {
   // Layered stacking: later placements sit on top with a small shift.
   const duvets = groups.duvet.map((it, i) => {
     const dy = -i * 10
-    return withPattern(it, {
-      points: `150,${332 + dy} 330,${240 + dy} 468,${306 + dy} 288,${398 + dy}`,
-      stroke: '#17171a', strokeWidth: 3, strokeLinejoin: 'round',
-    })
+    const pts = `150,${332 + dy} 330,${240 + dy} 468,${306 + dy} 288,${398 + dy}`
+    const shape = { points: pts, stroke: '#17171a', strokeWidth: 3, strokeLinejoin: 'round' }
+    const crop = cropOf(it)
+    if (!crop) return withPattern(it, shape)
+
+    // The four polygon points are the unit square's corners in order, so this
+    // matrix drops the cropped fabric onto the mattress at the room's angle:
+    // (0,0)→150,332  (1,0)→330,240  (1,1)→468,306  (0,1)→288,398.
+    const [x0, y0, x1, y1] = crop
+    const w = x1 - x0
+    const h = y1 - y0
+    return (
+      <g key={it.uid}>
+        <clipPath id={'duvet-' + it.uid}>
+          <polygon points={pts} />
+        </clipPath>
+        {/* The clip has to sit on an untransformed wrapper: a clip-path is
+            resolved in the coordinate system the element's own transform
+            establishes, so pairing them on one <g> would clip in fabric
+            space and drop the image entirely. */}
+        <g clipPath={`url(#duvet-${it.uid})`}>
+          <g transform={`matrix(180 -92 138 66 150 ${332 + dy})`}>
+            <image
+              href={imageOf(it)}
+              x={-x0 / w}
+              y={-y0 / h}
+              width={1 / w}
+              height={1 / h}
+              preserveAspectRatio="none"
+            />
+          </g>
+        </g>
+        <polygon
+          {...shape}
+          fill="none"
+          className={'tappable' + (flags[it.uid] ? ' svg-flagged' : '')}
+          onClick={() => onTapItem(it.uid)}
+        />
+      </g>
+    )
   })
 
   const throws_ = groups.throw.map((it, i) => {
@@ -525,20 +578,41 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
           const idx = (chipIndex[it.z] = (chipIndex[it.z] ?? -1) + 1)
           const [dx, dy] = CHIP_OFFSETS[idx % CHIP_OFFSETS.length]
           const m = ZONE_META[it.z]
+          const img = p.colorways[it.c]?.image || p.image
+          const crop = p.crop && img ? p.crop : null
+          const style = { zIndex: 5 + idx }
+          if (crop) {
+            // Show the crop at its own aspect ratio by blowing the background
+            // up until that sub-rect is the whole tile.
+            const [x0, y0, x1, y1] = crop
+            const w = x1 - x0
+            const h = y1 - y0
+            style.left = `${m.px + dx * 0.5}%`
+            style.top = `${m.py + dy * 0.5}%`
+            style.width = `${m.pw}%`
+            style.backgroundImage = `url(${img})`
+            style.backgroundPosition = `${(x0 / (1 - w)) * 100}% ${(y0 / (1 - h)) * 100}%`
+            style.backgroundSize = `${100 / w}% ${100 / h}%`
+            style.aspectRatio = `${w * MOCKUP_W} / ${h * MOCKUP_H}`
+          } else {
+            style.left = `${m.cx + dx}%`
+            style.top = `${m.cy + dy}%`
+            style.background = p.colorways[it.c]?.hex
+          }
           return (
             <button
               key={it.uid}
-              className={'room-chip' + (fit.flags[it.uid] ? ' flagged' : '')}
-              style={{
-                left: `calc(${m.cx + dx}% )`,
-                top: `calc(${m.cy + dy}% )`,
-                background: p.colorways[it.c]?.hex,
-                zIndex: 5 + idx,
-              }}
+              className={
+                'room-chip' +
+                (crop ? ' room-chip-photo' : '') +
+                (crop && m.surface ? ' on-surface' : '') +
+                (fit.flags[it.uid] ? ' flagged' : '')
+              }
+              style={style}
               onPointerDown={(e) => startPointer(e, { pid: it.pid, c: it.c, uid: it.uid })}
               title={p.name + ' — tap to edit, drag to move'}
             >
-              {p.short}
+              {crop ? <span className="sr-only">{p.name}</span> : p.short}
             </button>
           )
         })}
