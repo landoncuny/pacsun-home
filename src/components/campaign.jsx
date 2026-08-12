@@ -81,17 +81,6 @@ function Footer() {
   return (
     <footer className="footer">
       <p className="footer-brand">PACSUN HOME</p>
-      <div className="footer-cal">
-        <p className="footer-cal-title">Seasonal drop calendar</p>
-        <div className="footer-cal-row">
-          <span className="footer-season">SS Drop · Jan–Mar</span>
-          <span>"Refresh" — new year, new room energy</span>
-        </div>
-        <div className="footer-cal-row is-now">
-          <span className="footer-season">FW Drop · Jul–Aug</span>
-          <span>"Back to School + Holiday Hosting" — live now</span>
-        </div>
-      </div>
       <p className="footer-fine">
         PacSun Home concept demo. Not affiliated with actual PacSun inventory.
       </p>

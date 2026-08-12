@@ -280,7 +280,7 @@ function computeFit(placed, dims) {
 // Main builder
 // ---------------------------------------------------------------
 function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInRoom }) {
-  const { PRODUCTS, PRESETS, COLLECTIONS, byId, fmt, BUNDLE_MIN, BUNDLE_PCT } = window.DATA
+  const { PRESETS, COLLECTIONS, gridProducts, byId, fmt, BUNDLE_MIN, BUNDLE_PCT } = window.DATA
 
   const [placed, setPlaced] = useState(() =>
     initialRoom ? initialRoom.i.map(([pid, c, z]) => ({ uid: nextUid(), pid, c, z })) : []
@@ -301,7 +301,9 @@ function RoomBuilder({ collection, presetReq, initialRoom, onShopRoom, onViewInR
   const toastTimer = useRef(null)
 
   const presets = PRESETS.filter((p) => p.collection === collection)
-  const tray = PRODUCTS.filter((p) => p.collection === collection)
+  // Photographed SKUs only — the tray is a storefront surface, so it holds the
+  // same product the grid above it does rather than falling back to grey tiles.
+  const tray = gridProducts(collection)
 
   const showToast = useCallback((msg) => {
     setToast(msg)

@@ -111,34 +111,6 @@
       footprint: { w: 4, l: 6 }, dims: { w: 39, d: 75, h: 22 },
       image: IMG + 'kids-bedding-palm.png',
       colorways: [{ name: 'Palm Green', hex: '#7fa86a', image: IMG + 'kids-bedding-palm.png' }] },
-
-    // ----- earlier mockup round, still real photography -----
-    { id: 'd10', name: 'Heart Jacquard Comforter & Sham Set', collection: 'dorm', line: "Women's",
-      category: 'bedding', short: 'Comforter', price: 119, zone: 'bed', pattern: 'stars',
-      footprint: { w: 4, l: 7 }, dims: { w: 42, d: 80, h: 24 },
-      image: IMG + 'bedding-pink-heart.png',
-      colorways: [
-        { name: 'Blush Pink', hex: '#f2c9d5', image: IMG + 'bedding-pink-heart.png' },
-        { name: 'Bright White', hex: '#eeeeec', image: IMG + 'bedding-white-heart.png' },
-      ] },
-    { id: 'd11', name: 'Heart Stripe Comforter & Sham Set', collection: 'dorm', line: "Women's",
-      category: 'bedding', short: 'Comforter', price: 119, zone: 'bed', pattern: 'stars',
-      footprint: { w: 4, l: 7 }, dims: { w: 42, d: 80, h: 24 },
-      image: IMG + 'bedding-white-heart.png',
-      colorways: [
-        { name: 'Bright White', hex: '#eeeeec', image: IMG + 'bedding-white-heart.png' },
-        { name: 'Blush Pink', hex: '#f2c9d5', image: IMG + 'bedding-pink-heart.png' },
-      ] },
-    { id: 'd12', name: 'Piped Sateen Comforter & Sham Set', collection: 'dorm', line: "Men's",
-      category: 'bedding', short: 'Comforter', price: 129, zone: 'bed', pattern: null,
-      footprint: { w: 4, l: 7 }, dims: { w: 42, d: 80, h: 24 },
-      image: IMG + 'bedding-navy.png',
-      colorways: [{ name: 'Deep Navy', hex: '#1f2a44', image: IMG + 'bedding-navy.png' }] },
-    { id: 'k10', name: 'Gingham Check Comforter & Sham Set', collection: 'kids',
-      category: 'bedding', short: 'Comforter', price: 89, zone: 'bed', pattern: 'checker',
-      footprint: { w: 4, l: 6 }, dims: { w: 39, d: 75, h: 22 },
-      image: IMG + 'bedding-plaid-blue.png',
-      colorways: [{ name: 'Blue & Burgundy Check', hex: '#5c3237', image: IMG + 'bedding-plaid-blue.png' }] },
   ]
 
   // Insert each photographed SKU at the front of its collection's run, keeping
@@ -148,21 +120,23 @@
     D.PRODUCTS.splice(at < 0 ? D.PRODUCTS.length : at, 0, p)
   })
 
-  // ---------- presets lead with the photographed bedding ----------
-  const swapBed = (presetId, pid) => {
-    const preset = D.PRESETS.find((p) => p.id === presetId)
-    if (!preset) return
-    const bed = preset.items.find((it) => it[2] === 'bed')
-    if (bed) bed[0] = pid
-    else preset.items.unshift([pid, 0, 'bed'])
+  // ---------- presets: photographed SKUs only ----------
+  // The builder never shows an unphotographed product, so the starter rooms
+  // can only place photographed ones. Anything a preset used to drop in that
+  // has no photography yet (rugs, lamps, LEDs, posters) is dropped from it;
+  // re-add those lines here once the mockups exist.
+  const PRESET_ITEMS = {
+    'y2k-glow': [['d20', 0, 'bed'], ['d24', 0, 'desk']],
+    'poster-wall': [['d21', 0, 'bed'], ['d24', 0, 'desk']],
+    'minimal-dorm': [['d23', 0, 'bed']],
+    'neutral-era': [['e20', 0, 'bed'], ['e23', 0, 'bed'], ['e22', 0, 'desk']],
+    'coffee-bar': [['e21', 0, 'bed'], ['e22', 0, 'desk']],
+    'f1-racer': [['k20', 0, 'bed']],
+    'polka-dot': [['k21', 0, 'bed']],
   }
-  swapBed('y2k-glow', 'd20')
-  swapBed('poster-wall', 'd21')
-  swapBed('minimal-dorm', 'd23')
-  swapBed('neutral-era', 'e20')
-  swapBed('coffee-bar', 'e21')
-  swapBed('f1-racer', 'k20')
-  swapBed('polka-dot', 'k21')
+  D.PRESETS.forEach((preset) => {
+    if (PRESET_ITEMS[preset.id]) preset.items = PRESET_ITEMS[preset.id]
+  })
 
   // ---------- shop structure ----------
   D.CATEGORY_LABEL = {
