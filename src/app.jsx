@@ -14,15 +14,28 @@ function parseRoomHash() {
   }
 }
 
+// Routes: "#/home" | "#/dorm" | "#/kids" are collection storefronts, with an
+// optional "/<category>" segment preselecting a filter chip. Anything else is
+// the landing page. A shared room link lands on its own collection.
+function parseRoute(room) {
+  const { ID_BY_SLUG, COLLECTIONS } = window.DATA
+  const m = (location.hash || '').match(/^#\/(home|dorm|kids)(?:\/([a-z-]+))?/)
+  if (m) return { view: 'collection', collection: ID_BY_SLUG[m[1]], category: m[2] || null }
+  if (room && room.c && COLLECTIONS[room.c]) return { view: 'collection', collection: room.c, category: null }
+  return { view: 'landing', collection: null, category: null }
+}
+
 function App() {
-  const { COLLECTIONS } = window.DATA
+  const { COLLECTIONS, SLUG_BY_ID } = window.DATA
   const [initialRoom] = useStateA(parseRoomHash)
-  const [collection, setCollection] = useStateA(initialRoom?.c && COLLECTIONS[initialRoom.c] ? initialRoom.c : 'dorm')
+  const [route, setRoute] = useStateA(() => parseRoute(initialRoom))
   const [cart, setCart] = useStateA({})
   const [cartOpen, setCartOpen] = useStateA(false)
   const [presetReq, setPresetReq] = useStateA(null)
   const [activeSection, setActiveSection] = useStateA(null)
   const [arView, setArView] = useStateA(null) // {pid, colorIdx}
+  // Section to scroll to once the next view has rendered.
+  const [pendingScroll, setPendingScroll] = useStateA(initialRoom ? 'build' : null)
 
   const refs = { shop: useRefA(null), build: useRefA(null), quiz: useRefA(null), community: useRefA(null) }
 
@@ -33,28 +46,78 @@ function App() {
     }, 700)
   }
 
-  // Smooth scroll with an instant fallback — some embedded webviews
-  // never run rAF-driven smooth scrolling, so verify we moved and jump if not.
-  // "collection-<id>" targets a shop band and selects that collection.
-  const navigate = (id) => {
-    if (typeof id === 'string' && id.indexOf('collection-') === 0) {
-      const cid = id.slice('collection-'.length)
-      if (COLLECTIONS[cid]) setCollection(cid)
-      requestAnimationFrame(() => {
-        const el = document.getElementById(id)
-        if (el) scrollTo(el.getBoundingClientRect().top + window.scrollY - 100)
-      })
-      return
-    }
-    const el = id === 'top' ? null : refs[id]?.current
-    if (id !== 'top' && !el) return
-    scrollTo(id === 'top' ? 0 : el.getBoundingClientRect().top + window.scrollY - 100)
+  // Smooth scroll with an instant fallback — some embedded webviews never run
+  // rAF-driven smooth scrolling, so verify we moved and jump if not.
+  const scrollToSection = (id) => {
+    if (id === 'top') return scrollTo(0)
+    const el = refs[id] && refs[id].current
+    if (!el) return
+    scrollTo(el.getBoundingClientRect().top + window.scrollY - 100)
   }
 
-  // shared room links land you right in the builder
+  // ---- routing ----
+  const openCollection = (cid, section, category) => {
+    if (!COLLECTIONS[cid]) return
+    if (section) setPendingScroll(section)
+    const next = '#/' + SLUG_BY_ID[cid] + (category ? '/' + category : '')
+    // Same-hash assignment fires no hashchange, so re-sync by hand.
+    if (location.hash === next) setRoute(parseRoute(null))
+    else location.hash = next
+  }
+
+  const goHome = (section) => {
+    if (section) setPendingScroll(section)
+    location.hash = '#/'
+  }
+
   useEffectA(() => {
-    if (initialRoom) setTimeout(() => navigate('build'), 400)
+    const onHash = () => setRoute(parseRoute(null))
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
   }, [])
+
+  // New page starts at the top unless something asked for a section.
+  // Repeated because scroll anchoring nudges us back down as the page's
+  // images settle and change the layout height.
+  useEffectA(() => {
+    if (pendingScroll) return
+    const top = () => window.scrollTo({ top: 0, behavior: 'instant' })
+    top()
+    const frame = requestAnimationFrame(top)
+    const t = setTimeout(top, 200)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(t)
+    }
+  }, [route.view, route.collection])
+
+  // Run a queued scroll after the destination view has painted.
+  useEffectA(() => {
+    if (!pendingScroll) return
+    const t = setTimeout(() => {
+      scrollToSection(pendingScroll)
+      setPendingScroll(null)
+    }, 120)
+    return () => clearTimeout(t)
+  }, [pendingScroll, route.view, route.collection])
+
+  // Nav dispatch: section ids scroll, "collection-<id>" opens a storefront.
+  const navigate = (id) => {
+    if (typeof id === 'string' && id.indexOf('collection-') === 0) {
+      const [cid, category] = id.slice('collection-'.length).split('/')
+      return openCollection(cid, null, category)
+    }
+    if (id === 'top') return goHome()
+    if (id === 'build') {
+      // The builder lives on the collection pages now.
+      return route.view === 'collection'
+        ? scrollToSection('build')
+        : openCollection('essentials', 'build')
+    }
+    // quiz + community live on the landing page
+    if (route.view !== 'landing') return goHome(id)
+    scrollToSection(id)
+  }
 
   // highlight the section you're in
   useEffectA(() => {
@@ -66,7 +129,7 @@ function App() {
     )
     Object.values(refs).forEach((r) => r.current && obs.observe(r.current))
     return () => obs.disconnect()
-  }, [])
+  }, [route.view, route.collection])
 
   const addToCart = (pid, cIdx = 0, qty = 1) =>
     setCart((c) => {
@@ -95,20 +158,14 @@ function App() {
     setCartOpen(true)
   }
 
+  // Quiz + campaign hand you into a collection page with the builder primed.
   const startPresetRoom = (coll, presetId) => {
-    setCollection(coll)
     setPresetReq({ presetId, ts: Date.now() })
-    navigate('build')
-  }
-
-  // Collections calls this with { build: true } from a band's "Build a … room".
-  const selectCollection = (cid, opts) => {
-    setCollection(cid)
-    if (opts && opts.build) navigate('build')
+    openCollection(coll, 'build')
   }
 
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0)
-  // Per-collection counts drive one bundle banner inside each shop band.
+  // Per-collection counts drive the bundle banner on each collection page.
   const cartCountsByCollection = useMemoA(() => {
     const { byId } = window.DATA
     return Object.entries(cart).reduce((acc, [key, qty]) => {
@@ -118,40 +175,54 @@ function App() {
     }, {})
   }, [cart])
 
-  const theme = COLLECTIONS[collection]
+  const themeId = route.collection || 'essentials'
+  const theme = COLLECTIONS[themeId]
 
   return (
-    <div className={'app theme-' + collection} style={{ '--acc': theme.accent }}>
-      <Nav onNavigate={navigate} cartCount={cartCount} onCartOpen={() => setCartOpen(true)} activeSection={activeSection} />
-      <Hero onBuild={() => navigate('build')} onQuiz={() => navigate('quiz')} />
+    <div className={'app theme-' + themeId} style={{ '--acc': theme.accent }}>
+      <Nav
+        onNavigate={navigate}
+        cartCount={cartCount}
+        onCartOpen={() => setCartOpen(true)}
+        activeSection={activeSection}
+        route={route}
+      />
 
-      <section ref={refs.shop} data-section="shop">
-        <Collections
-          collection={collection}
-          onSelect={selectCollection}
-          onAddToCart={addToCart}
-          onViewInRoom={(pid, colorIdx) => setArView({ pid, colorIdx })}
-          cartCountsByCollection={cartCountsByCollection}
-        />
-      </section>
-
-      <section ref={refs.build} data-section="build">
-        <RoomBuilder
-          collection={collection}
+      {route.view === 'collection' ? (
+        <CollectionPage
+          collection={route.collection}
+          category={route.category}
+          bundleCount={cartCountsByCollection[route.collection] || 0}
           presetReq={presetReq}
           initialRoom={initialRoom}
-          onShopRoom={shopRoom}
+          buildRef={refs.build}
+          onOpenCollection={openCollection}
+          onHome={() => goHome()}
+          onAddToCart={addToCart}
           onViewInRoom={(pid, colorIdx) => setArView({ pid, colorIdx })}
+          onShopRoom={shopRoom}
         />
-      </section>
+      ) : (
+        <React.Fragment>
+          <Hero
+            onShop={() => scrollToSection('shop')}
+            onQuiz={() => scrollToSection('quiz')}
+            onOpenCollection={openCollection}
+          />
 
-      <section ref={refs.quiz} data-section="quiz">
-        <Quiz onStartRoom={startPresetRoom} />
-      </section>
+          <section ref={refs.shop} data-section="shop">
+            <CollectionPicker onOpen={openCollection} />
+          </section>
 
-      <section ref={refs.community} data-section="community">
-        <Campaign onShopLook={startPresetRoom} />
-      </section>
+          <section ref={refs.quiz} data-section="quiz">
+            <Quiz onStartRoom={startPresetRoom} />
+          </section>
+
+          <section ref={refs.community} data-section="community">
+            <Campaign onShopLook={startPresetRoom} />
+          </section>
+        </React.Fragment>
+      )}
 
       <Footer />
       <CartDrawer open={cartOpen} cart={cart} onClose={() => setCartOpen(false)} onChangeQty={changeQty} />

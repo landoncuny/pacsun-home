@@ -202,3 +202,111 @@
   color: var(--grey-7); margin: 22px 0 10px;
 }
 .quiz-result-actions { flex-direction: row; flex-wrap: wrap; }
+
+/* ============ v3: COLLECTION ROUTING ============
+   The landing page is entry points only; each collection has its own page
+   at #/home, #/dorm, #/kids. Rules below replace the old stacked bands. */
+
+/* ---------- hero shots are now collection links ---------- */
+.hero-shot { display: block; width: 100%; padding: 0; border: 0; cursor: pointer; text-align: left; }
+.hero-shot img { transition: transform 0.4s ease; }
+.hero-shot:hover img { transform: scale(1.03); }
+.hero-shot-cap {
+  position: absolute; bottom: 12px; left: 12px; background: var(--white); border: 1px solid var(--ink);
+  padding: 5px 8px; font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+}
+
+/* ---------- landing: collection entry points ---------- */
+.coll-card { overflow: hidden; }
+.coll-media { position: relative; display: block; overflow: hidden; background: var(--tile); }
+.coll-media img {
+  display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.4s ease;
+}
+.coll-card:hover .coll-media img { transform: scale(1.04); }
+.coll-flag-float { position: absolute; top: 10px; left: 10px; background: var(--white); padding: 4px 7px; }
+.coll-pantone { display: flex; gap: 4px; margin: 4px 0 2px; }
+.coll-chip { display: block; width: 18px; height: 18px; border: 1px solid var(--line); }
+.coll-cta { display: flex; align-items: baseline; gap: 8px; }
+.coll-count {
+  font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--grey-7);
+}
+
+/* ---------- collection page ---------- */
+.coll-page-inner { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+.coll-page-head { border-bottom: 1px solid var(--ink); background: var(--tile); padding: 26px 0 30px; }
+.coll-page-head .coll-page-inner {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end;
+}
+@media (max-width: 860px) { .coll-page-head .coll-page-inner { grid-template-columns: 1fr; gap: 18px; } }
+
+.crumbs {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: var(--grey-7);
+}
+.crumbs .link-btn { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; }
+.crumbs-here { color: var(--ink); }
+
+.coll-page-id { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; min-width: 0; }
+.coll-page-title {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.005em;
+  font-size: clamp(40px, 7vw, 68px); line-height: 0.94;
+}
+.coll-page-tagline { font-size: 14.5px; color: var(--grey-7); max-width: 460px; }
+.coll-page-meta {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: var(--grey-7);
+}
+.coll-page-palette { display: flex; gap: 6px; }
+.palette-swatch { display: block; width: 34px; height: 34px; border: 1px solid var(--ink); }
+
+.coll-page-body { padding-top: 26px; padding-bottom: 52px; }
+.cat-filter { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.cat-chip {
+  border: 1px solid var(--line); background: var(--white); color: var(--ink); padding: 8px 13px;
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer;
+}
+.cat-chip:hover { border-color: var(--ink); }
+.cat-chip.is-on { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.coll-page-bundle { margin-top: 20px; }
+.coll-page-body .product-grid {
+  margin-top: 26px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 28px 16px;
+}
+.coll-page-build { border-top: 1px solid var(--ink); }
+
+/* ---------- keep-shopping cross-links ---------- */
+.coll-page-next { padding-top: 40px; padding-bottom: 60px; border-top: 1px solid var(--ink); }
+.next-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+@media (max-width: 700px) { .next-cards { grid-template-columns: 1fr; } }
+.next-card {
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left;
+  border: 1px solid var(--line); background: var(--white); padding: 22px 20px 20px; cursor: pointer;
+  transition: border-color 0.16s ease;
+}
+.next-card:hover { border-color: var(--ink); }
+.next-card-name {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase;
+  font-size: 26px; line-height: 1;
+}
+.next-card-tag { font-size: 13px; color: var(--grey-7); }
+.next-card-cta {
+  margin-top: 6px; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em;
+}
+
+/* ---------- nav ---------- */
+.nav-menu-count {
+  margin-left: auto; font-size: 9.5px; font-weight: 500; letter-spacing: 0.12em; color: var(--grey-7);
+}
+
+/* ---------- product media: fit the landscape mockups whole ----------
+   Mockups are 792x612 on white and pair a product with its matching piece
+   (bedding + sleep set, flatware + bowl + plate). A 3:4 cover crop cut the
+   partner piece off, so the frame matches the artwork and contains it.
+   The earlier square mockups letterbox cleanly on the same white. */
+.product-photo { aspect-ratio: 4 / 3; background: var(--white); }
+.product-photo img { object-fit: contain; }
+.hero-shot img { aspect-ratio: 4 / 3; object-fit: contain; background: var(--white); }
+/* Names wrap to two lines unevenly across a row; pin the actions to the
+   bottom so "Add to Bag" lines up across the grid. */
+.product-card { height: 100%; }
+.product-info { flex: 1 1 auto; }
+.product-actions { margin-top: auto; }

@@ -75,99 +75,55 @@ function ProductCard({ product, onAddToCart, onViewInRoom }) {
   )
 }
 
-// One full-width band per collection: its own rule and product grid.
-function CollectionBand({ collection: c, index, products, bundleCount, onAddToCart, onViewInRoom, onBuildRoom }) {
-  return (
-    <section className={'coll-band' + (index % 2 === 1 ? ' is-shaded' : '')} id={'collection-' + c.id}>
-      <div className="coll-band-inner">
-        <header className="coll-band-head">
-          <div className="coll-band-id">
-            <p className="coll-band-kicker">
-              Collection {String(index + 1).padStart(2, '0')}
-              {c.flagship && <em className="coll-flag">Flagship</em>}
-            </p>
-            <h3 className="coll-band-title">{c.name}</h3>
-            <p className="coll-band-tagline">{c.tagline}</p>
-          </div>
-          <div className="coll-band-colors">
-            <button className="link-btn coll-band-build" onClick={onBuildRoom}>
-              Build {/^[aeiou]/i.test(c.short) ? 'an' : 'a'} {c.short} room
-            </button>
-          </div>
-        </header>
-
-        {bundleCount > 0 && (
-          <div className="coll-band-bundle">
-            <BundleBanner count={bundleCount} collectionName={c.short} />
-          </div>
-        )}
-
-        <div className="product-grid">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} onViewInRoom={onViewInRoom} />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Collections({ collection, onSelect, onAddToCart, onViewInRoom, cartCountsByCollection = {} }) {
-  const { PRODUCTS, collectionList } = window.DATA
+// Landing page: the three collections as entry points only. No product grids —
+// product lives on the collection pages at #/home, #/dorm and #/kids.
+function CollectionPicker({ onOpen }) {
+  const { collectionList, gridProducts } = window.DATA
   const list = collectionList()
 
   return (
-    <div>
-      <div className="section collections">
-        <p className="section-kicker">01 — Shop by collection</p>
-        <h2 className="section-title">Three collections. Three palettes.</h2>
-        <p className="section-sub">
-          Each collection has its own palette. Pick one to filter the room builder, presets and bundles.
-        </p>
+    <div className="section collections">
+      <p className="section-kicker">01 — Shop by collection</p>
+      <h2 className="section-title">Three collections. Three palettes.</h2>
+      <p className="section-sub">
+        Each collection has its own palette, its own product and its own page. Pick where you're shopping.
+      </p>
 
-        <div className="coll-cards">
-          {list.map((c) => (
-            <button
-              key={c.id}
-              className={'coll-card' + (collection === c.id ? ' is-selected' : '')}
-              onClick={() => onSelect(c.id)}
-            >
-              <span className="coll-media ph-tile">
-                <span className="ph-label">{c.short} lookbook</span>
+      <div className="coll-cards">
+        {list.map((c) => {
+          const products = gridProducts(c.id)
+          const lead = products[0]
+          return (
+            <button key={c.id} className="coll-card" onClick={() => onOpen(c.id)}>
+              <span className="coll-media">
+                {lead ? (
+                  <img src={lead.image} alt="" loading="lazy" />
+                ) : (
+                  <span className="ph-tile"><span className="ph-label">{c.short} lookbook</span></span>
+                )}
+                {c.flagship && <em className="coll-flag coll-flag-float">Flagship</em>}
               </span>
               <span className="coll-meta">
-                {c.flagship && (
-                  <span className="coll-ages">
-                    <em className="coll-flag">Flagship</em>
-                  </span>
-                )}
                 <span className="coll-name">{c.name}</span>
                 <span className="coll-tagline">{c.tagline}</span>
-                <span className="coll-vibes">{c.vibe.join(' · ')}</span>
-                <span className="coll-cta">{collection === c.id ? 'Selected' : 'Shop this collection'}</span>
+                <span className="coll-pantone">
+                  {c.pantone.map((p) => (
+                    <em key={p.code} className="coll-chip" style={{ background: p.hex }} title={p.name} />
+                  ))}
+                </span>
+                <span className="coll-cta">
+                  Shop {c.short} <span className="coll-count">{products.length} pieces</span>
+                </span>
               </span>
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
-
-      {list.map((c, i) => (
-        <CollectionBand
-          key={c.id}
-          collection={c}
-          index={i}
-          products={PRODUCTS.filter((p) => p.collection === c.id)}
-          bundleCount={cartCountsByCollection[c.id] || 0}
-          onAddToCart={onAddToCart}
-          onViewInRoom={onViewInRoom}
-          onBuildRoom={() => onSelect(c.id, { build: true })}
-        />
-      ))}
     </div>
   )
 }
 
-window.Collections = Collections
-window.CollectionBand = CollectionBand
+window.CollectionPicker = CollectionPicker
+window.ProductCard = ProductCard
 window.ProductThumb = ProductThumb
 window.BundleBanner = BundleBanner

@@ -1,17 +1,16 @@
 const { useState: useStateN, useRef: useRefN, useEffect: useEffectN } = React
 
-const NAV_LINKS = [
-  { id: 'shop', label: 'Shop', hasMenu: true },
-  { id: 'build', label: 'Build Your Room' },
-  { id: 'quiz', label: 'Style Quiz' },
-  { id: 'community', label: 'Community' },
-]
-
-function Nav({ onNavigate, cartCount, onCartOpen, activeSection }) {
+function Nav({ onNavigate, cartCount, onCartOpen, activeSection, route }) {
   const { shopMenu } = window.DATA
   const [openId, setOpenId] = useStateN(null)
   const closeTimer = useRefN(null)
   const menu = shopMenu()
+  const onCollection = route && route.view === 'collection'
+
+  // "Build Your Room" only appears where the builder lives.
+  const links = [{ id: 'shop', label: 'Shop', hasMenu: true }]
+    .concat(onCollection ? [{ id: 'build', label: 'Build Your Room' }] : [])
+    .concat([{ id: 'quiz', label: 'Style Quiz' }, { id: 'community', label: 'Community' }])
 
   const open = (id) => {
     clearTimeout(closeTimer.current)
@@ -40,22 +39,21 @@ function Nav({ onNavigate, cartCount, onCartOpen, activeSection }) {
         </button>
       </div>
       <nav className="nav-pills" aria-label="Sections">
-        {NAV_LINKS.map((l) => (
-          <button
-            key={l.id}
-            className={
-              'nav-pill' +
-              (activeSection === l.id ? ' is-active' : '') +
-              (openId === l.id ? ' is-open' : '')
-            }
-            aria-expanded={l.hasMenu ? openId === l.id : undefined}
-            onMouseEnter={() => (l.hasMenu ? open(l.id) : scheduleClose())}
-            onFocus={() => (l.hasMenu ? open(l.id) : scheduleClose())}
-            onClick={() => go(l.id)}
-          >
-            {l.label}
-          </button>
-        ))}
+        {links.map((l) => {
+          const active = l.id === 'shop' ? onCollection : activeSection === l.id
+          return (
+            <button
+              key={l.id}
+              className={'nav-pill' + (active ? ' is-active' : '') + (openId === l.id ? ' is-open' : '')}
+              aria-expanded={l.hasMenu ? openId === l.id : undefined}
+              onMouseEnter={() => (l.hasMenu ? open(l.id) : scheduleClose())}
+              onFocus={() => (l.hasMenu ? open(l.id) : scheduleClose())}
+              onClick={() => go(l.id)}
+            >
+              {l.label}
+            </button>
+          )
+        })}
       </nav>
 
       {openId === 'shop' && (
@@ -66,13 +64,14 @@ function Nav({ onNavigate, cartCount, onCartOpen, activeSection }) {
                 <div className="nav-menu-title">
                   <span className="nav-menu-swatch" style={{ background: col.swatch }} />
                   {col.title}
+                  <span className="nav-menu-count">{col.count}</span>
                 </div>
                 <div className="nav-menu-links">
                   {col.items.map((it) => (
                     <button
                       key={it.label}
                       className={'nav-menu-link' + (it.strong ? ' is-strong' : '')}
-                      onClick={() => go('collection-' + col.id)}
+                      onClick={() => go('collection-' + col.id + (it.category ? '/' + it.category : ''))}
                     >
                       {it.label}
                     </button>

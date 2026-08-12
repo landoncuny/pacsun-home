@@ -1,10 +1,11 @@
+// One shot per collection — the hero doubles as the first entry point.
 const HERO_SHOTS = [
-  { src: './src/assets/bedding-pink-heart.png', label: "Women's · Dorm" },
-  { src: './src/assets/bedding-navy.png', label: "Men's · Dorm" },
-  { src: './src/assets/bedding-plaid-blue.png', label: 'Kids' },
+  { id: 'essentials', src: './src/assets/home-bedding-oat.png', label: 'Home' },
+  { id: 'dorm', src: './src/assets/dorm-goodnight-plaid-blue.png', label: 'Dorm' },
+  { id: 'kids', src: './src/assets/kids-bedding-sun.png', label: 'Kids' },
 ]
 
-function Hero({ onBuild, onQuiz }) {
+function Hero({ onShop, onQuiz, onOpenCollection }) {
   return (
     <section className="hero" id="top">
       <div className="hero-inner">
@@ -12,8 +13,8 @@ function Hero({ onBuild, onQuiz }) {
         <h1 className="hero-title">Wear your room.</h1>
         <p className="hero-sub">Your fit. Your space. Same energy.</p>
         <div className="hero-ctas">
-          <button className="btn btn-primary btn-lg" onClick={onBuild}>
-            Build Your Room
+          <button className="btn btn-primary btn-lg" onClick={onShop}>
+            Shop the Collections
           </button>
           <button className="btn btn-ghost btn-lg" onClick={onQuiz}>
             Take the Style Quiz
@@ -22,10 +23,10 @@ function Hero({ onBuild, onQuiz }) {
       </div>
       <div className="hero-shots">
         {HERO_SHOTS.map((s) => (
-          <figure className="hero-shot" key={s.label}>
-            <img src={s.src} alt={s.label + ' bedding'} />
-            <figcaption>{s.label}</figcaption>
-          </figure>
+          <button className="hero-shot" key={s.id} onClick={() => onOpenCollection(s.id)}>
+            <img src={s.src} alt={s.label + ' collection'} />
+            <span className="hero-shot-cap">{s.label}</span>
+          </button>
         ))}
       </div>
     </section>
