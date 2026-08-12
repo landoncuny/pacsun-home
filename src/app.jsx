@@ -38,6 +38,8 @@ function App() {
   const [pendingScroll, setPendingScroll] = useStateA(initialRoom ? 'build' : null)
 
   const refs = { shop: useRefA(null), build: useRefA(null), quiz: useRefA(null), community: useRefA(null) }
+  // Lives inside the community section, so it gets its own ref rather than a nav id.
+  const campusRef = useRefA(null)
 
   const scrollTo = (target) => {
     window.scrollTo({ top: target, behavior: 'smooth' })
@@ -219,7 +221,13 @@ function App() {
           </section>
 
           <section ref={refs.community} data-section="community">
-            <Campaign onShopLook={startPresetRoom} />
+            <Campaign
+              onSeeCampuses={() =>
+                campusRef.current &&
+                scrollTo(campusRef.current.getBoundingClientRect().top + window.scrollY - 100)
+              }
+            />
+            <CampusList innerRef={campusRef} />
           </section>
         </React.Fragment>
       )}

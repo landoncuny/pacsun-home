@@ -387,31 +387,60 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
 .quiz-result-actions { display: flex; flex-direction: column; gap: 10px; }
 
 /* ---------- campaign ---------- */
-.camp-cards { display: grid; gap: 14px; margin-top: 28px; }
-@media (min-width: 860px) { .camp-cards { grid-template-columns: repeat(3, 1fr); } }
-.camp-card {
-  min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
-  border: 1px solid var(--line); background: var(--white); padding: 22px 20px;
+.camp-lede {
+  display: grid; gap: 26px; margin-top: 28px;
+  border: 1px solid var(--line); background: var(--white); padding: 26px 24px;
 }
-.camp-card h3 { font-size: 19px; font-weight: 600; }
-.camp-card p { font-size: 13px; color: var(--grey-7); line-height: 1.55; }
-.camp-card p strong { color: var(--ink); }
+@media (min-width: 860px) { .camp-lede { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 40px; } }
+.camp-lede-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.camp-lede h3 { font-size: 19px; font-weight: 600; }
+.camp-lede p { font-size: 13px; color: var(--grey-7); line-height: 1.55; max-width: 46ch; }
+.camp-lede p strong { color: var(--ink); }
 .camp-tag {
   font-size: 9.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
   background: var(--ink); color: var(--white); padding: 4px 10px;
 }
-.looks-scroll { display: flex; gap: 10px; overflow-x: auto; width: 100%; max-width: 100%; padding: 4px 0 10px; scroll-snap-type: x mandatory; }
-.look-card {
-  flex: 0 0 140px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start;
-  gap: 6px; text-align: left; transition: opacity 0.12s;
+.camp-perks { list-style: none; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.camp-perks li {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 12px 0; border-top: 1px solid var(--line);
 }
-.look-card:hover { opacity: 0.75; }
-.look-media { width: 100%; aspect-ratio: 3 / 4; }
-.look-title { font-weight: 600; font-size: 13px; }
-.look-cta { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; text-decoration: underline; text-underline-offset: 3px; }
-.drop-list { list-style: none; display: flex; flex-direction: column; gap: 10px; width: 100%; }
-.drop-list li { display: flex; flex-direction: column; gap: 2px; font-size: 13px; border-left: 2px solid var(--ink); padding-left: 12px; }
-.drop-date { font-weight: 600; font-size: 11px; letter-spacing: 0.08em; }
+.camp-perks li:last-child { border-bottom: 1px solid var(--line); }
+.camp-perk-stat { font-family: var(--font-display, var(--font)); font-size: 28px; line-height: 1; min-width: 46px; }
+.camp-perk-label { font-size: 12px; color: var(--grey-7); line-height: 1.4; }
+
+/* ---------- campus tour ---------- */
+.campus { padding-top: 8px; }
+.campus-badge {
+  display: inline-block; margin-bottom: 14px; padding: 6px 12px;
+  border: 1px solid var(--ink); background: var(--ink); color: var(--white);
+  font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+}
+.campus .section-sub { max-width: 560px; }
+.campus-grid {
+  list-style: none; display: grid; gap: 14px; margin-top: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.campus-card {
+  min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  border: 1px solid var(--line); background: var(--white); padding: 0 18px 20px;
+  transition: border-color 0.16s ease, transform 0.16s ease;
+}
+.campus-card:hover { border-color: var(--ink); transform: translateY(-2px); }
+/* The school's two official colors, split 62/38 across the top of its card. */
+.campus-bar {
+  width: calc(100% + 36px); margin: 0 -18px 18px; height: 12px;
+  background: linear-gradient(to right, var(--c1) 0 62%, var(--c2) 62% 100%);
+  transition: height 0.16s ease;
+}
+.campus-card:hover .campus-bar { height: 18px; }
+.campus-name {
+  font-family: var(--font-display, var(--font)); font-size: 21px; line-height: 1.1;
+  text-transform: uppercase; letter-spacing: 0.01em;
+}
+.campus-city {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-7);
+}
 
 /* ---------- footer ---------- */
 .footer { border-top: 1px solid var(--ink); padding: 44px 20px 60px; text-align: center; background: var(--tile); }

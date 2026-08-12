@@ -1,77 +1,78 @@
-const LOOKS = [
-  { preset: 'y2k-glow', title: 'Glow Setup' },
-  { preset: 'poster-wall', title: 'Poster Wall' },
-  { preset: 'neutral-era', title: 'Neutral Era' },
-  { preset: 'coffee-bar', title: 'Coffee Bar Corner' },
-  { preset: 'f1-racer', title: 'Race Day' },
+// The eight stops on the move-in day pop-up tour, west to east, matching the
+// campus map in the launch deck. Each school gets its own two official colors —
+// they paint the bar on that school's card.
+const CAMPUSES = [
+  { name: 'UC Berkeley', city: 'Berkeley, CA', colors: ['#003262', '#FDB515'] },
+  { name: 'USC', city: 'Los Angeles, CA', colors: ['#990000', '#FFC72C'] },
+  { name: 'University of Arizona', city: 'Tucson, AZ', colors: ['#AB0520', '#0C234B'] },
+  { name: 'Arizona State University', city: 'Tempe, AZ', colors: ['#8C1D40', '#FFC627'] },
+  { name: 'CU Boulder', city: 'Boulder, CO', colors: ['#CFB87C', '#111111'] },
+  { name: 'UT Austin', city: 'Austin, TX', colors: ['#BF5700', '#333F48'] },
+  { name: 'Florida State University', city: 'Tallahassee, FL', colors: ['#782F40', '#CEB888'] },
+  { name: 'University of Miami', city: 'Miami, FL', colors: ['#F47321', '#005030'] },
 ]
 
-const DROPS = [
-  { date: 'JUL 18 · 7PM PT', theme: 'Dorm Kit restock + live room build' },
-  { date: 'JUL 25 · 7PM PT', theme: 'Neutral Era: bedding + throw drop' },
-  { date: 'AUG 01 · 6PM PT', theme: 'Kids racing room — full reveal' },
+const PERKS = [
+  { stat: '8', label: 'Campus stops' },
+  { stat: '200', label: 'Free throw blankets per stop' },
+  { stat: '1', label: 'Full dorm-makeover raffle' },
 ]
 
-function Campaign({ onShopLook }) {
-  const { PRESETS } = window.DATA
+function Campaign({ onSeeCampuses }) {
   return (
     <div className="section campaign">
       <p className="section-kicker">04 — Campaign &amp; community</p>
-      <h2 className="section-title">On campus + on your feed.</h2>
+      <h2 className="section-title">On campus.</h2>
 
-      <div className="camp-cards">
-        <article className="camp-card">
+      <article className="camp-lede">
+        <div className="camp-lede-copy">
           <span className="camp-tag">On Campus</span>
           <h3>Move-In Day Pop-Up</h3>
           <p>
-            We're taking over 20 campuses this August. Pull up for <strong>free throw blankets</strong> (first
+            We're taking over eight campuses this August. Pull up for <strong>free throw blankets</strong> (first
             200), a photo room, and an entry into the <strong>full dorm-makeover raffle</strong>.
           </p>
-          <a className="btn btn-ghost" href="https://www.pacsun.com" target="_blank" rel="noreferrer">
+          <button className="btn btn-ghost" onClick={onSeeCampuses}>
             See the campus list
-          </a>
-        </article>
+          </button>
+        </div>
+        <ul className="camp-perks">
+          {PERKS.map((p) => (
+            <li key={p.label}>
+              <span className="camp-perk-stat">{p.stat}</span>
+              <span className="camp-perk-label">{p.label}</span>
+            </li>
+          ))}
+        </ul>
+      </article>
+    </div>
+  )
+}
 
-        <article className="camp-card camp-looks">
-          <span className="camp-tag">Swipe</span>
-          <h3>Shop the Look</h3>
-          <p>Five room looks, each one tap-to-shop.</p>
-          <div className="looks-scroll">
-            {LOOKS.map((l) => {
-              const preset = PRESETS.find((p) => p.id === l.preset)
-              return (
-                <button
-                  key={l.preset}
-                  className="look-card"
-                  onClick={() => onShopLook(preset.collection, preset.id)}
-                >
-                  <span className="look-media ph-tile">
-                    <span className="ph-label">Look photo</span>
-                  </span>
-                  <span className="look-title">{l.title}</span>
-                  <span className="look-cta">Tap to shop</span>
-                </button>
-              )
-            })}
-          </div>
-        </article>
+function CampusList({ innerRef }) {
+  return (
+    <div className="section campus" ref={innerRef}>
+      <span className="campus-badge">Coming Jul–Aug</span>
+      <p className="section-kicker">05 — Campus tour</p>
+      <h2 className="section-title">Where we're popping up.</h2>
+      <p className="section-sub">
+        Eight schools, one move-in week each. Find your campus below — we'll post exact dates and booth
+        locations closer to the drop.
+      </p>
 
-        <article className="camp-card">
-          <span className="camp-tag">Live</span>
-          <h3>Live Room Drops on TikTok Shop</h3>
-          <ul className="drop-list">
-            {DROPS.map((d) => (
-              <li key={d.date}>
-                <span className="drop-date">{d.date}</span>
-                <span>{d.theme}</span>
-              </li>
-            ))}
-          </ul>
-          <a className="btn btn-primary" href="https://www.tiktok.com/@pacsun" target="_blank" rel="noreferrer">
-            Follow @pacsun for drop alerts
-          </a>
-        </article>
-      </div>
+      <ul className="campus-grid">
+        {CAMPUSES.map((c) => (
+          <li
+            key={c.name}
+            className="campus-card"
+            style={{ '--c1': c.colors[0], '--c2': c.colors[1] }}
+          >
+            <span className="campus-bar" aria-hidden="true" />
+            <span className="campus-name">{c.name}</span>
+            <span className="campus-city">{c.city}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -99,4 +100,5 @@ function Footer() {
 }
 
 window.Campaign = Campaign
+window.CampusList = CampusList
 window.Footer = Footer
