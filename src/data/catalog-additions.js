@@ -150,6 +150,32 @@
     if (p) p.crop = ROOM_CROP[id]
   })
 
+  // ---------- size ladder + retail from the logistics buy ----------
+  // Every photographed bedding SKU is a comforter/duvet set, so it prices off
+  // the deck's comforter rows. Which sizes a collection carries follows the
+  // buy: dorm takes all three, Home skips Twin, Kids is Twin only.
+  const COMFORTER_RETAIL = { Twin: 63.99, Queen: 88.99, King: 112.99 }
+  const SIZES_BY_COLLECTION = {
+    dorm: ['Twin', 'Queen', 'King'],
+    essentials: ['Queen', 'King'],
+    kids: ['Twin'],
+  }
+  D.PRODUCTS.forEach((p) => {
+    if (p.category !== 'bedding' || !p.image) return
+    const labels = SIZES_BY_COLLECTION[p.collection]
+    if (!labels) return
+    p.sizes = labels.map((label) => ({ label, price: COMFORTER_RETAIL[label] }))
+    p.price = p.sizes[0].price // the size the picker opens on
+  })
+  // Throw Pillow, same sheet. One size, so no picker.
+  const throwPillow = D.byId('e23')
+  if (throwPillow) throwPillow.price = 39.99
+
+  // Size 0 is the default for every surface that doesn't offer a picker —
+  // the room builder, a shared room link, the AR view opened from the tray.
+  D.priceOf = (p, sIdx = 0) => (!p ? 0 : p.sizes ? (p.sizes[sIdx] || p.sizes[0]).price : p.price)
+  D.sizeOf = (p, sIdx = 0) => (p && p.sizes ? (p.sizes[sIdx] || p.sizes[0]).label : null)
+
   // ---------- presets: photographed SKUs only ----------
   // The builder never shows an unphotographed product, so the starter rooms
   // can only place photographed ones. Anything a preset used to drop in that

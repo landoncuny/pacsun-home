@@ -1,13 +1,13 @@
-// Cart drawer. Cart shape: { "productId|colorwayIndex": quantity }
+// Cart drawer. Cart shape: { "productId|colorwayIndex|sizeIndex": quantity }
 // Bundle & Save: 3+ items (by qty) from one collection = 15% off those items.
 
 function cartTotals(cart) {
-  const { byId, BUNDLE_MIN, BUNDLE_PCT } = window.DATA
+  const { byId, priceOf, BUNDLE_MIN, BUNDLE_PCT } = window.DATA
   const lines = Object.entries(cart)
     .map(([key, qty]) => {
-      const [pid, cIdx] = key.split('|')
+      const [pid, cIdx, sIdx] = key.split('|')
       const p = byId(pid)
-      return p ? { key, p, cIdx: +cIdx, qty } : null
+      return p ? { key, p, cIdx: +cIdx, sIdx: +sIdx || 0, price: priceOf(p, +sIdx || 0), qty } : null
     })
     .filter(Boolean)
 
@@ -17,9 +17,9 @@ function cartTotals(cart) {
   let sub = 0
   const discounts = {}
   lines.forEach((l) => {
-    sub += l.p.price * l.qty
+    sub += l.price * l.qty
     if (collCount[l.p.collection] >= BUNDLE_MIN) {
-      discounts[l.p.collection] = (discounts[l.p.collection] || 0) + l.p.price * l.qty * BUNDLE_PCT
+      discounts[l.p.collection] = (discounts[l.p.collection] || 0) + l.price * l.qty * BUNDLE_PCT
     }
   })
   const discount = Object.values(discounts).reduce((a, b) => a + b, 0)
@@ -27,7 +27,7 @@ function cartTotals(cart) {
 }
 
 function CartDrawer({ open, cart, onClose, onChangeQty }) {
-  const { COLLECTIONS, fmt, BUNDLE_MIN } = window.DATA
+  const { COLLECTIONS, fmt, sizeOf, BUNDLE_MIN } = window.DATA
   if (!open) return null
   const t = cartTotals(cart)
 
@@ -49,7 +49,11 @@ function CartDrawer({ open, cart, onClose, onChangeQty }) {
                   <ProductThumb product={l.p} colorIdx={l.cIdx} size={44} />
                   <div className="cart-line-info">
                     <strong>{l.p.name}</strong>
-                    <span>{l.p.colorways[l.cIdx]?.name} · {fmt(l.p.price)}</span>
+                    <span>
+                      {[sizeOf(l.p, l.sIdx), l.p.colorways[l.cIdx]?.name, fmt(l.price)]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
                   </div>
                   <div className="cart-qty">
                     <button onClick={() => onChangeQty(l.key, -1)}>−</button>

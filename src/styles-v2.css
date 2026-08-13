@@ -322,6 +322,21 @@
 .product-info { flex: 1 1 auto; }
 .product-actions { margin-top: auto; }
 
+/* ---------- size run ---------- */
+.size-row { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.size-label {
+  font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: var(--grey-7);
+}
+.size-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.size-chip {
+  border: 1px solid var(--line); background: var(--white); color: var(--ink);
+  padding: 7px 11px; font-size: 10.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  transition: border-color 0.14s ease, background 0.14s ease, color 0.14s ease;
+}
+.size-chip:hover { border-color: var(--ink); }
+.size-chip.is-on { background: var(--ink); color: var(--white); border-color: var(--ink); }
+
 /* ============ MOBILE STOREFRONT ============
    Phone-width shopping: two products per row instead of one, filters that
    scroll instead of wrapping ragged, full-width actions, and touch-sized
@@ -363,9 +378,13 @@
   .product-line-tag { font-size: 8.5px; padding: 3px 6px; }
   .btn-mini { width: 100%; padding: 11px 8px; font-size: 10.5px; }
   .product-actions .link-btn { font-size: 10px; }
-  /* Colourway dots are the one control you aim at with a fingertip. */
+  /* Colourway dots and size chips are what you aim at with a fingertip. */
   .swatches { gap: 8px; }
   .swatch { width: 22px; height: 22px; }
+  /* One even row of chips rather than a 2-up wrap that strands King on its
+     own line — the columns divide by however many sizes the collection has. */
+  .size-chips { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 5px; }
+  .size-chip { padding: 10px 2px; font-size: 10px; letter-spacing: 0.06em; text-align: center; }
 
   /* Campus tour: eight one-up cards, so trim the air out of each. */
   .campus-grid { gap: 10px; margin-top: 22px; }

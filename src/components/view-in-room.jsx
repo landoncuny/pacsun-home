@@ -84,8 +84,8 @@ function ArLabel({ at, text, dx = 0, dy = 0 }) {
   )
 }
 
-function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
-  const { byId, fmt } = window.DATA
+function ViewInRoom({ pid, colorIdx, sizeIdx = 0, onClose, onAddToCart }) {
+  const { byId, fmt, priceOf, sizeOf } = window.DATA
   const product = byId(pid)
   const [mode, setMode] = useStateAR('ask') // ask | camera | sample
   const [camError, setCamError] = useStateAR(null)
@@ -304,7 +304,15 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
         <button className="ar-close" onClick={close}>✕</button>
         <div className="ar-title">
           <strong>{product.name}</strong>
-          <span>{product.dims.w}″W × {product.dims.d}″D × {product.dims.h}″H · {fmt(product.price)}</span>
+          <span>
+            {[
+              `${product.dims.w}″W × ${product.dims.d}″D × ${product.dims.h}″H`,
+              sizeOf(product, sizeIdx),
+              fmt(priceOf(product, sizeIdx)),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
         </div>
         {mode === 'camera' && (
           <button className="ar-flip" onClick={() => enableCamera(facing === 'environment' ? 'user' : 'environment')} title="Flip camera">
@@ -416,9 +424,9 @@ function ViewInRoom({ pid, colorIdx, onClose, onAddToCart }) {
               </button>
               <button
                 className="btn btn-primary"
-                onClick={() => { onAddToCart(pid, cIdx); setAdded(true); setTimeout(() => setAdded(false), 1800) }}
+                onClick={() => { onAddToCart(pid, cIdx, sizeIdx); setAdded(true); setTimeout(() => setAdded(false), 1800) }}
               >
-                {added ? 'Added' : `Add to Bag · ${fmt(product.price)}`}
+                {added ? 'Added' : `Add to Bag · ${fmt(priceOf(product, sizeIdx))}`}
               </button>
             </div>
             <p className="ar-note">

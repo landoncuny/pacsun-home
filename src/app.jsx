@@ -33,7 +33,7 @@ function App() {
   const [cartOpen, setCartOpen] = useStateA(false)
   const [presetReq, setPresetReq] = useStateA(null)
   const [activeSection, setActiveSection] = useStateA(null)
-  const [arView, setArView] = useStateA(null) // {pid, colorIdx}
+  const [arView, setArView] = useStateA(null) // {pid, colorIdx, sizeIdx}
   // Section to scroll to once the next view has rendered.
   const [pendingScroll, setPendingScroll] = useStateA(initialRoom ? 'build' : null)
 
@@ -133,9 +133,11 @@ function App() {
     return () => obs.disconnect()
   }, [route.view, route.collection])
 
-  const addToCart = (pid, cIdx = 0, qty = 1) =>
+  // Key is product|colorway|size — a Twin and a King of the same print are
+  // separate lines in the bag, like any size-run storefront.
+  const addToCart = (pid, cIdx = 0, sIdx = 0, qty = 1) =>
     setCart((c) => {
-      const key = `${pid}|${cIdx}`
+      const key = `${pid}|${cIdx}|${sIdx}`
       return { ...c, [key]: (c[key] || 0) + qty }
     })
 
@@ -152,7 +154,8 @@ function App() {
     setCart((c) => {
       const next = { ...c }
       placed.forEach((it) => {
-        const key = `${it.pid}|${it.c}`
+        // The room canvas has no size picker, so a room bags the default size.
+        const key = `${it.pid}|${it.c}|0`
         next[key] = (next[key] || 0) + 1
       })
       return next
@@ -201,7 +204,7 @@ function App() {
           onOpenCollection={openCollection}
           onHome={() => goHome()}
           onAddToCart={addToCart}
-          onViewInRoom={(pid, colorIdx) => setArView({ pid, colorIdx })}
+          onViewInRoom={(pid, colorIdx, sizeIdx) => setArView({ pid, colorIdx, sizeIdx })}
           onShopRoom={shopRoom}
         />
       ) : (
@@ -238,6 +241,7 @@ function App() {
         <ViewInRoom
           pid={arView.pid}
           colorIdx={arView.colorIdx}
+          sizeIdx={arView.sizeIdx || 0}
           onClose={() => setArView(null)}
           onAddToCart={addToCart}
         />

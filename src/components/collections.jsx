@@ -43,9 +43,11 @@ function BundleBanner({ count, collectionName }) {
 }
 
 function ProductCard({ product, onAddToCart, onViewInRoom }) {
-  const { fmt } = window.DATA
+  const { fmt, priceOf } = window.DATA
   const [ci, setCi] = useStateC(0)
+  const [si, setSi] = useStateC(0)
   const tag = product.line || (product.category === 'kit' ? 'Complete Kit' : null)
+  const sizes = product.sizes
   return (
     <article className="product-card">
       <div className="product-media">
@@ -54,7 +56,8 @@ function ProductCard({ product, onAddToCart, onViewInRoom }) {
       </div>
       <div className="product-info">
         <h4>{product.name}</h4>
-        <p className="product-price">{fmt(product.price)}</p>
+        {/* Price follows the size, the way it does on any size-run PDP. */}
+        <p className="product-price">{fmt(priceOf(product, si))}</p>
         <p className="product-colorway">{product.colorways[ci] && product.colorways[ci].name}</p>
         <div className="swatches">
           {product.colorways.map((cw, i) => (
@@ -67,12 +70,30 @@ function ProductCard({ product, onAddToCart, onViewInRoom }) {
             />
           ))}
         </div>
+        {sizes && (
+          <div className="size-row">
+            <span className="size-label">Size</span>
+            <div className="size-chips" role="group" aria-label="Size">
+              {sizes.map((s, i) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  className={'size-chip' + (i === si ? ' is-on' : '')}
+                  aria-pressed={i === si}
+                  onClick={() => setSi(i)}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className="product-actions">
-        <button className="btn btn-mini" onClick={() => onAddToCart(product.id, ci)}>
+        <button className="btn btn-mini" onClick={() => onAddToCart(product.id, ci, si)}>
           Add to Bag
         </button>
-        <button className="link-btn" onClick={() => onViewInRoom(product.id, ci)}>
+        <button className="link-btn" onClick={() => onViewInRoom(product.id, ci, si)}>
           View in Your Room
         </button>
       </div>
