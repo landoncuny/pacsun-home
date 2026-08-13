@@ -118,7 +118,9 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
 
 /* ---------- collections ---------- */
 .coll-cards { display: grid; gap: 14px; margin-top: 28px; }
-@media (min-width: 760px) { .coll-cards { grid-template-columns: repeat(3, 1fr); } }
+/* Matches the mobile layer's 700px edge so there's no band where the cards
+   are neither stacked-for-phone nor three across. */
+@media (min-width: 701px) { .coll-cards { grid-template-columns: repeat(3, 1fr); } }
 .coll-card {
   display: flex; flex-direction: column; text-align: left;
   border: 1px solid var(--line); background: var(--white);

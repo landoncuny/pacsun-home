@@ -5,16 +5,21 @@ const { useState: useStateC } = React
 function ProductThumb({ product, colorIdx = 0, size, ratio }) {
   const cw = product.colorways[colorIdx] || product.colorways[0]
   const img = (cw && cw.image) || product.image
+  // `size` is the caller pinning a small square — the cart line, the tray card,
+  // the placed-item sheet. It has to bind on the photo too, or a photographed
+  // SKU ignores it and the thumb grows to whatever the flex row will give it.
+  // Unsized, the photo keeps the card crop the stylesheet gives it.
+  const pinned = size ? { width: size, height: size, flex: '0 0 auto' } : undefined
   if (img) {
     return (
-      <span className="product-photo">
+      <span className="product-photo" style={pinned}>
         <img src={img} alt={product.name} loading="lazy" />
         {cw && <span className="ph-swatch" style={{ background: cw.hex }} />}
       </span>
     )
   }
   const hex = (cw && cw.hex) || '#eee'
-  const style = size ? { width: size, height: size } : { aspectRatio: ratio || '3 / 4', width: '100%' }
+  const style = pinned || { aspectRatio: ratio || '3 / 4', width: '100%' }
   return (
     <span className="ph-tile" style={style} aria-hidden="true">
       <span className="ph-label">{product.category.replace('-', ' ')}</span>
