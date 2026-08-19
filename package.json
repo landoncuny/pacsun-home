@@ -1,0 +1,11 @@
+{
+  "name": "pacsun-home",
+  "version": "1.0.0",
+  "description": "PacSun Home - Wear Your Room",
+  "type": "module",
+  "scripts": {},
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  },
+  "devDependencies": {}
+}
